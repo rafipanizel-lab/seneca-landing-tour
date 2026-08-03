@@ -137,6 +137,7 @@ body.strip #cap{bottom:126px}
   box-shadow:0 18px 50px rgba(0,0,0,.55);overflow:hidden;transition:opacity .28s cubic-bezier(.4,0,.2,1), transform 1.25s cubic-bezier(.35,.6,.25,1)
 }
 #plan.focus{transform:translate(13vw,4vh) scale(1.85);z-index:60}
+#plan{will-change:transform}
 .pav.fast{transition:none!important}
 #plan.hide{opacity:0;transform:translateX(-14px) scale(.97);pointer-events:none}
 #plan.dragging{transition:none}
@@ -744,6 +745,7 @@ function go(i){
     if(j===i) t.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
   });
   small.active = n.room || null; if(window.bigDH) bigDH.active = n.room || null;
+  if(n.id!=='yard') window.__fin=false;
   curNode = n.id; markPlan2D(n.id); if(typeof updRoute==='function') updRoute(); if(typeof updAvatar==='function') updAvatar();
   if(n.room) seen.add(n.room);
   gateCheck();
@@ -959,7 +961,7 @@ function speakNode(i){
   if(!muted) fadeTo(0.06);
   const p=narr.play(); if(p&&p.catch) p.catch(()=>{ narrPlaying=false; });
 }
-narr.onended=()=>{ narrPlaying=false; if(!timer && D[cur] && D[cur].id==='yard'){ musicOff(); if(typeof LEAD!=='undefined'&&LEAD.show) setTimeout(()=>openLead(true),800); } else if(!muted) fadeTo(timer?0.22:0.16);
+narr.onended=()=>{ narrPlaying=false; if(!timer && D[cur] && D[cur].id==='yard'){ finishTour(); } else if(!muted) fadeTo(timer?0.22:0.16);
   if(timer){ clearInterval(timer); timer=setInterval(tourAdvance,tourGap()); clearTimeout(tourT); tourT=setTimeout(tourAdvance,900); } };
 narr.onerror=()=>{ narrPlaying=false; if(timer) setTimeout(tourAdvance,4200); };
 zMute.classList.add('on'); zMute.title='Narration on \u2014 click to turn off';
@@ -982,6 +984,24 @@ const TOURSEQ=[
  {n:'guest',t:0},{n:'family2',t:0},{n:'yard',t:1}
 ];
 let tourP=-1, tourT=null; window.__transit=false;
+const outro=new Audio();
+function playOutro(name, done){
+  outro.src=SAYBASE+name+'.mp3';
+  if(!muted) fadeTo(0.06);
+  outro.onended=()=>{ if(!muted) fadeTo(0.2); if(done) done(); };
+  outro.onerror=()=>{ if(done) done(); };
+  const pr=outro.play(); if(pr&&pr.catch) pr.catch(()=>{ if(done) done(); });
+}
+function finishTour(){
+  if(window.__fin) return; window.__fin=true;
+  if(!muted) fadeTo(0.22);
+  setTimeout(()=>{ playOutro('outro1', ()=>{
+    if(typeof LEAD!=='undefined' && LEAD.show){
+      setTimeout(()=>openLead(true), 500);
+      setTimeout(()=>playOutro('outro2', ()=>{ setTimeout(()=>musicOff(), 4500); }), 1100);
+    } else { setTimeout(()=>musicOff(), 4000); }
+  }); }, 2800);
+}
 function endTour(){
   clearInterval(timer); timer=null; clearTimeout(tourT); bPlay.classList.remove('on'); document.body.classList.remove('touring');
   const wk=document.getElementById('walker'); if(wk) wk.classList.remove('on');
@@ -1023,6 +1043,7 @@ const WAYPATH={
 };
 function planWalk(nodes, done){
   const plan=document.getElementById('plan');
+  clearTimeout(window.__pfT);
   const wasHidden=plan.classList.contains('hide'); if(wasHidden) plan.classList.remove('hide');
   plan.classList.add('focus');
   const pin=nid=>{ const a=(typeof AVALIAS!=='undefined'&&AVALIAS[nid])||nid; return (PLAN2D.rooms||[]).find(r=>r.node===a); };
@@ -1058,7 +1079,7 @@ function planWalk(nodes, done){
     if(f<1){ requestAnimationFrame(frame); }
     else{
       avs.forEach(a2=>a2.classList.remove('fast'));
-      plan.classList.remove('focus'); if(wasHidden) setTimeout(()=>plan.classList.add('hide'),1300);
+      window.__pfT=setTimeout(()=>{ plan.classList.remove('focus'); if(wasHidden) setTimeout(()=>plan.classList.add('hide'),1300); },450);
       done();
     }
   }
