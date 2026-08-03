@@ -257,6 +257,16 @@ body.strip #strip{transform:none}
 @keyframes walkdash{to{stroke-dashoffset:-8.4}}
 .route{z-index:2}
 #zMus{display:none!important}
+/* translucent walking avatar shown while passing through areas */
+#walker{position:absolute;left:40%;bottom:15%;width:150px;z-index:8;opacity:0;pointer-events:none;transition:opacity .5s;filter:drop-shadow(0 8px 16px rgba(0,0,0,.55))}
+#walker.on{opacity:.42;animation:walkdrift 3.6s ease-in-out}
+#walker svg{width:100%;height:auto}
+@keyframes walkdrift{0%{transform:translateX(-70px) scale(.9) rotate(-2deg)}25%{transform:translateX(-25px) scale(.97) rotate(2deg)}50%{transform:translateX(15px) scale(1.05) rotate(-2deg)}75%{transform:translateX(55px) scale(1.13) rotate(2deg)}100%{transform:translateX(95px) scale(1.22) rotate(-1deg)}}
+#walker .wtag{position:absolute;left:50%;top:-26px;transform:translateX(-50%);white-space:nowrap;font:600 11px ui-sans-serif,system-ui;color:rgba(255,255,255,.85);text-shadow:0 1px 6px #000}
+/* the same avatar glides across the floor plan from station to station */
+.pav{position:absolute;width:17px;transform:translate(-50%,-88%);z-index:4;opacity:0;pointer-events:none;
+  transition:left 1.7s ease,top 1.7s ease,opacity .4s;filter:drop-shadow(0 1px 3px rgba(0,0,0,.7))}
+.pav svg{width:100%;height:auto;opacity:.95}
 </style>
 </head>
 <body>
@@ -268,6 +278,7 @@ body.strip #strip{transform:none}
       <img class="layer" id="lyB" alt="">
       <video id="clip" playsinline muted preload="metadata"></video>
       <div id="hots"></div>
+      <div id="walker"><span class="wtag">walking through&hellip;</span><svg viewBox="0 0 64 64"><g fill="#fff"><circle cx="34" cy="9" r="6"/><path d="M30 17l9 2 3 11 9 6-3 5-10-7-2 8 8 13-6 4-9-14-7 8-2 13h-6l3-16 7-10-2-9-6 6-5-3 9-11z"/></g></svg></div>
     </div>
     <button id="motion"><svg viewBox="0 0 24 24"><path d="M7 4l12 8-12 8z"/></svg><span id="motionTxt">Play motion</span></button>
     <div id="scrub"><i></i></div><div id="scrubHint">drag left / right to walk</div>
@@ -636,6 +647,8 @@ function buildPlan2D(host, big){
   rsvg.innerHTML='<path d="'+rd+'" fill="none" stroke="rgba(180,67,44,.85)" stroke-width="1.1" stroke-dasharray="2.4 1.8" stroke-linejoin="round" stroke-linecap="round" style="animation:walkdash 1.6s linear infinite"/>';
   box.appendChild(rsvg);
   (window.__routes=window.__routes||[]).push({p:rsvg.querySelector('path'), rp:rp});
+  const av=document.createElement('div'); av.className='pav'; av.innerHTML='<svg viewBox="0 0 64 64"><g fill="#fff"><circle cx="34" cy="9" r="6"/><path d="M30 17l9 2 3 11 9 6-3 5-10-7-2 8 8 13-6 4-9-14-7 8-2 13h-6l3-16 7-10-2-9-6 6-5-3 9-11z"/></g></svg>';
+  box.appendChild(av); (window.__avs=window.__avs||[]).push(av);
   return box;
 }
 function updRoute(){
@@ -644,6 +657,12 @@ function updRoute(){
     const pts=o.rp.filter(r=>(WALK[r.node]||99)<=w);
     o.p.setAttribute('d', pts.length>1 ? 'M '+pts.map(q=>q.x+' '+q.y).join(' L ') : '');
   });
+}
+const AVALIAS={twilight:'foyer',dining2:'dining1',pbath2:'pbath',family2:'family1',fkf:'family1',kbf:'kitchen'};
+function updAvatar(){
+  const nid=AVALIAS[curNode]||curNode;
+  const r=(PLAN2D.rooms||[]).find(x=>x.node===nid);
+  (window.__avs||[]).forEach(a=>{ if(r){ a.style.opacity='1'; a.style.left=r.x+'%'; a.style.top=r.y+'%'; } else a.style.opacity='0'; });
 }
 function markPlan2D(node){
   document.querySelectorAll('.p2d .pin').forEach(p=>p.classList.toggle('act', p.dataset.node===node));
@@ -703,7 +722,7 @@ function go(i){
     if(j===i) t.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
   });
   small.active = n.room || null; if(window.bigDH) bigDH.active = n.room || null;
-  curNode = n.id; markPlan2D(n.id); if(typeof updRoute==='function') updRoute();
+  curNode = n.id; markPlan2D(n.id); if(typeof updRoute==='function') updRoute(); if(typeof updAvatar==='function') updAvatar();
   if(n.room) seen.add(n.room);
   gateCheck();
   document.getElementById('pfRoom').textContent = n.room ? roomLabel(n.room) : 'Exterior';
@@ -944,6 +963,7 @@ const TOURSEQ=[
 let tourP=-1, tourT=null; window.__transit=false;
 function endTour(){
   clearInterval(timer); timer=null; clearTimeout(tourT); bPlay.classList.remove('on');
+  const wk=document.getElementById('walker'); if(wk) wk.classList.remove('on');
   musicOff();
   if(typeof LEAD!=='undefined' && LEAD.show) setTimeout(()=>openLead(true), 600);
 }
@@ -955,7 +975,9 @@ function tourAdvance(){
   window.__transit = !st.t;
   go(idx[st.n]);
   window.__transit = false;
-  if(!st.t){ clearTimeout(tourT); tourT=setTimeout(tourAdvance, 2000); }
+  const wk=document.getElementById('walker');
+  if(!st.t){ if(wk){wk.classList.remove('on'); void wk.offsetWidth; wk.classList.add('on');} clearTimeout(tourT); tourT=setTimeout(tourAdvance, 3600); }
+  else if(wk) wk.classList.remove('on');
 }
 function retime(){ if(timer){ clearInterval(timer); timer=setInterval(tourAdvance, tourGap()); } }
 /* browsers only allow sound after the first tap \u2014 start everything then */
@@ -1013,7 +1035,7 @@ zEmpty.onclick=()=>{
 };
 
 bPlay.onclick=()=>{
-  if(timer){ clearInterval(timer); timer=null; clearTimeout(tourT); bPlay.classList.remove('on'); musicOff(); stopSpeak(); }
+  if(timer){ clearInterval(timer); timer=null; clearTimeout(tourT); bPlay.classList.remove('on'); musicOff(); stopSpeak(); const wk=document.getElementById('walker'); if(wk) wk.classList.remove('on'); }
   else { if(!narrOn){narrOn=true;zMute.classList.add('on');zMute.title='Narration on \u2014 click to turn off';} timer=setInterval(tourAdvance,tourGap()); bPlay.classList.add('on'); musicOn();
     tourP=TOURSEQ.findIndex(st=>st.t&&st.n===D[cur].id); if(tourP<0) tourP=0;
     const st0=TOURSEQ[tourP];
