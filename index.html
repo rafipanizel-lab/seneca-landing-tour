@@ -1111,8 +1111,8 @@ function tourAdvance(){
   if(p>=TOURSEQ.length){ endTour(); return; }
   const target=TOURSEQ[p]; tourP=p;
   try{ const pre=new Image(); pre.src=D[idx[target.n]].src; }catch(e){}
-  if(way.length){ stopSpeak(); planWalk(way.concat([target.n]), ()=>{ if(timer) go(idx[target.n]); }); }
-  else go(idx[target.n]);
+  stopSpeak();
+  planWalk(way.concat([target.n]), ()=>{ if(timer) go(idx[target.n]); });   // every station change walks the plan
 }
 function retime(){ if(timer){ clearInterval(timer); timer=setInterval(tourAdvance, tourGap()); } }
 /* browsers only allow sound after the first tap \u2014 start everything then */
