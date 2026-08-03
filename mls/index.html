@@ -1008,7 +1008,8 @@ function playOutro(name, done){
   const pr=outro.play(); if(pr&&pr.catch) pr.catch(()=>{ if(done) done(); });
 }
 function fullReset(){
-  stopSpeak(); try{outro.pause();}catch(e){}
+  stopSpeak(); try{outro.onended=null; outro.onerror=null; outro.pause();}catch(e){}
+  try{document.getElementById('plan').classList.remove('focus');}catch(e){}
   window.__transit=true; if(cur!==0) go(0); window.__transit=false;
   try{resetView();}catch(e){}
 }
@@ -1318,7 +1319,10 @@ Then wander on your own &mdash; follow the arrows inside each photo; they trace 
 document.getElementById('bReset').onclick=function(){
   try{ if(timer){ document.getElementById('bPlay').click(); } }catch(e){}
   try{ stopSpeak(); }catch(e){}
-  try{ document.getElementById('lead').classList.remove('on'); document.getElementById('help').classList.remove('on'); }catch(e){}
+  try{ outro.onended=null; outro.onerror=null; outro.pause(); }catch(e){}
+  try{ window.__fin=false; document.body.classList.remove('endlock','touring'); }catch(e){}
+  try{ const L=document.getElementById('lead'); L.classList.remove('on'); L.dataset.gate=''; document.getElementById('help').classList.remove('on'); }catch(e){}
+  try{ document.getElementById('plan').classList.remove('focus'); }catch(e){}
   if(typeof cur!=='undefined' && cur!==0){ go(0); } else { try{ resetView(); }catch(e){} try{ speakNode(0); }catch(e){} }
 };
 </script></body>
