@@ -452,7 +452,7 @@ const HOME = {"w": 47.6, "d": 77.6, "slab": [{"x": 0, "y": 0.0, "w": 12.75, "d":
 const PLAN2D = {"src": "plan2d.jpg", "parking": {"x": 64.0, "y": 78.5, "w": 30.0, "h": 20.5, "label": "GARAGE \u00b7 3 CARS"}, "rooms": [{"node": "primary", "x": 27.9, "y": 15.6, "name": "Primary Bedroom"}, {"node": "pbath", "x": 24.0, "y": 32.6, "name": "Primary Bath"}, {"node": "closet", "x": 24.0, "y": 47.3, "name": "Primary Closet"}, {"node": "bed_m", "x": 27.9, "y": 56.4, "name": "Bedroom"}, {"node": "bath_h", "x": 26.8, "y": 67.7, "name": "Hall Bathroom"}, {"node": "bed_f", "x": 27.9, "y": 80.3, "name": "Bedroom"}, {"node": "office", "x": 27.9, "y": 93.3, "name": "Office / Study"}, {"node": "foyer", "x": 42.7, "y": 86.4, "name": "Entry"}, {"node": "dining1", "x": 56.8, "y": 88.5, "name": "Dining Room"}, {"node": "family1", "x": 51.9, "y": 26.0, "name": "Living Room"}, {"node": "kitchen", "x": 60.6, "y": 43.0, "name": "Kitchen"}, {"node": "breakfast", "x": 79.0, "y": 45.0, "name": "Breakfast"}, {"node": "utility", "x": 85.5, "y": 52.9, "name": "Laundry"}, {"node": "gaming", "x": 78.5, "y": 30.4, "name": "Game / Media"}, {"node": "guest", "x": 85.5, "y": 14.8, "name": "Guest Bedroom"}, {"node": "bath2", "x": 71.2, "y": 10.4, "name": "Guest Bathroom"}, {"node": "butler", "x": 68.4, "y": 71.2, "name": "Butler Hall"}, {"node": "mud", "x": 68.4, "y": 76.2, "name": "Mud Room"}]};
 const MUSIC  = [{"type": "audio/mpeg", "src": "music.mp3"}, {"type": "audio/ogg; codecs=opus", "src": "music.ogg"}];
 
-const WALK={foyer:1,dining1:2,dining2:2,office:3,bed_f:4,bath_h:5,bed_m:6,butler:7,mud:8,garage:9,utility:10,kitchen:11,breakfast:12,kbf:13,gaming:14,family1:15,family2:15,fkf:15,guest:16,bath2:17,primary:18,pbath:19,pbath2:19,closet:19,yard:20};
+const WALK={foyer:1,dining1:2,dining2:2,office:3,bed_f:4,bath_h:5,bed_m:6,mud:7,garage:8,butler:9,kitchen:10,kbf:11,breakfast:12,utility:13,gaming:14,fkf:15,family1:15,family2:15,primary:16,pbath:17,pbath2:17,closet:18,guest:19,bath2:19,yard:20};
 const ICON = {
   fwd:'<svg viewBox="0 0 24 24"><path d="M12 20V5M6 11l6-6 6 6"/></svg>',
   back:'<svg viewBox="0 0 24 24"><path d="M12 4v15M6 13l6 6 6-6"/></svg>',
@@ -984,14 +984,13 @@ function tourGap(){ return narrOn ? 45000 : 4800; }
 const TOURSEQ=[
  {n:'twilight',t:1},{n:'foyer',t:1},{n:'dining1',t:1},{n:'dining2',t:1},{n:'office',t:1},
  {n:'foyer',t:0},{n:'bed_f',t:1},{n:'bath_h',t:1},{n:'bed_m',t:1},
- {n:'foyer',t:0},{n:'butler',t:1},{n:'mud',t:1},{n:'garage',t:1},
- {n:'mud',t:0},{n:'utility',t:1},
- {n:'breakfast',t:0},{n:'kitchen',t:1},{n:'breakfast',t:1},{n:'kbf',t:1},
+ {n:'foyer',t:0},{n:'mud',t:1},{n:'garage',t:1},
+ {n:'mud',t:0},{n:'butler',t:1},{n:'kitchen',t:1},{n:'kbf',t:1},{n:'breakfast',t:1},{n:'utility',t:1},
  {n:'breakfast',t:0},{n:'gaming',t:1},
- {n:'fkf',t:0},{n:'family1',t:1},{n:'family2',t:1},{n:'fkf',t:1},
- {n:'guest',t:1},{n:'bath2',t:1},
- {n:'guest',t:0},{n:'family1',t:0},{n:'primary',t:1},{n:'pbath',t:1},{n:'pbath2',t:1},{n:'closet',t:1},
- {n:'fkf',t:0},{n:'yard',t:1}
+ {n:'breakfast',t:0},{n:'fkf',t:1},{n:'family1',t:1},
+ {n:'primary',t:1},{n:'pbath',t:1},{n:'pbath2',t:1},{n:'closet',t:1},
+ {n:'pbath',t:0},{n:'primary',t:0},{n:'family1',t:0},{n:'guest',t:1},{n:'bath2',t:1},
+ {n:'guest',t:0},{n:'family2',t:0},{n:'yard',t:1}
 ];
 let tourP=-1, tourT=null; window.__transit=false;
 function endTour(){
