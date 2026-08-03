@@ -1306,20 +1306,7 @@ go(0);
 @media(max-width:760px){#coach .card{max-width:220px;font-size:11.5px}}
 </style>
 <div id="sndHint">&#128266; Tap anywhere for sound &amp; narration</div>
-<div id="coach"><div class="arr">&#9650;</div><div class="card">
-<b>Start here:</b> tap <b>Auto tour</b> above to see the whole home, start to finish.<br>
-Then wander on your own &mdash; follow the arrows inside each photo; they trace the natural walking flow of the house.
-<span class="ok" onclick="document.getElementById('coach').remove()">Got it</span>
-</div></div>
-<script>
-(function(){
-  var c=document.getElementById('coach'), b=document.getElementById('bPlay');
-  function place(){ if(!c||!b) return; var r=b.getBoundingClientRect(); c.style.left=(r.left+r.width/2)+'px'; c.style.top=(r.bottom+8)+'px'; }
-  place(); window.addEventListener('resize',place);
-  b.addEventListener('click',function(){ if(c){c.remove();c=null;} });
-  setTimeout(function(){ if(c){c.style.transition='opacity .8s';c.style.opacity='0';setTimeout(function(){c&&c.remove();c=null;},900);} },30000);
-})();
-</script>
+
 <script>
 document.getElementById('bReset').onclick=function(){
   try{ if(timer){ document.getElementById('bPlay').click(); } }catch(e){}
