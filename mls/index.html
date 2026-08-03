@@ -241,6 +241,10 @@ body.strip #strip{transform:none}
 #help button{margin-top:20px;width:100%;height:40px;border-radius:10px;border:none;cursor:pointer;background:var(--accent);color:#1a1509;font:inherit;font-weight:600;font-size:13.5px}
 #note{margin-top:14px;font-size:11.5px;color:var(--mut);line-height:1.55}
 .arw,#zRst{display:none!important}
+.hot .disc{position:relative}
+.hot .disc::after{content:'';position:absolute;inset:-9px;border:2px solid rgba(255,255,255,.72);border-radius:50%;pointer-events:none;animation:wpulse 2.6s ease-in-out infinite}
+@keyframes wpulse{0%,100%{opacity:.75;transform:scale(1)}50%{opacity:.35;transform:scale(1.12)}}
+.wnum{position:absolute;top:-15px;right:-15px;width:21px;height:21px;border:1.7px solid rgba(255,255,255,.95);border-radius:50%;display:grid;place-items:center;font:700 10.5px ui-sans-serif,system-ui;color:#fff;background:rgba(0,0,0,.38);text-shadow:0 1px 4px #000}
 </style>
 </head>
 <body>
@@ -405,6 +409,7 @@ const HOME = {"w": 47.6, "d": 77.6, "slab": [{"x": 0, "y": 0.0, "w": 12.75, "d":
 const PLAN2D = {"src": "../plan2d.jpg", "parking": {"x": 64.0, "y": 78.5, "w": 30.0, "h": 20.5, "label": "GARAGE \u00b7 3 CARS"}, "rooms": [{"node": "primary", "x": 27.9, "y": 15.6, "name": "Primary Bedroom"}, {"node": "pbath", "x": 24.0, "y": 32.6, "name": "Primary Bath"}, {"node": "closet", "x": 24.0, "y": 47.3, "name": "Primary Closet"}, {"node": "bed_m", "x": 27.9, "y": 56.4, "name": "Bedroom"}, {"node": "bath_h", "x": 26.8, "y": 67.7, "name": "Hall Bathroom"}, {"node": "bed_f", "x": 27.9, "y": 80.3, "name": "Bedroom"}, {"node": "office", "x": 27.9, "y": 93.3, "name": "Office / Study"}, {"node": "foyer", "x": 42.7, "y": 86.4, "name": "Entry"}, {"node": "dining1", "x": 56.8, "y": 88.5, "name": "Dining Room"}, {"node": "family1", "x": 51.9, "y": 26.0, "name": "Living Room"}, {"node": "kitchen", "x": 60.6, "y": 43.0, "name": "Kitchen"}, {"node": "breakfast", "x": 79.0, "y": 45.0, "name": "Breakfast"}, {"node": "utility", "x": 85.5, "y": 52.9, "name": "Laundry"}, {"node": "gaming", "x": 78.5, "y": 30.4, "name": "Game / Media"}, {"node": "guest", "x": 85.5, "y": 14.8, "name": "Guest Bedroom"}, {"node": "bath2", "x": 71.2, "y": 10.4, "name": "Guest Bathroom"}, {"node": "butler", "x": 68.4, "y": 71.2, "name": "Butler Hall"}, {"node": "mud", "x": 68.4, "y": 76.2, "name": "Mud Room"}]};
 const MUSIC  = [{"type": "audio/mpeg", "src": "../music.mp3"}, {"type": "audio/ogg; codecs=opus", "src": "../music.ogg"}];
 
+const WALK={foyer:1,dining1:2,dining2:2,office:3,bed_f:4,bath_h:5,bed_m:6,family1:7,family2:7,fkf:7,primary:8,pbath:9,pbath2:9,closet:10,yard:11,kbf:12,kitchen:12,breakfast:13,gaming:14,guest:15,bath2:16,butler:17,mud:18,garage:19,utility:20};
 const ICON = {
   fwd:'<svg viewBox="0 0 24 24"><path d="M12 20V5M6 11l6-6 6 6"/></svg>',
   back:'<svg viewBox="0 0 24 24"><path d="M12 4v15M6 13l6 6 6-6"/></svg>',
@@ -650,7 +655,9 @@ function go(i){
     // left-edge hotspots would sit under the floor-plan card, so drop them below it
     const hx=h.x, hy=(hx<22 ? Math.max(h.y,66) : h.y);
     e.className='hot'; e.style.left=hx+'%'; e.style.top=hy+'%'; e.style.animationDelay=(120+k*90)+'ms';
-    e.innerHTML='<div class="disc">'+(ICON[h.dir]||ICON.fwd)+'</div><div class="lab">'+h.label+'</div>';
+    const wn=WALK[h.to]||'';
+    e.innerHTML='<div class="disc">'+(ICON[h.dir]||ICON.fwd)+(wn?'<span class="wnum">'+wn+'</span>':'')+'</div><div class="lab">'+h.label+'</div>';
+    e.ondblclick=ev=>{ev.stopPropagation(); ev.preventDefault(); if(h.to.charAt(0)!=='#') go(idx[h.to]);};
     e.onclick=ev=>{ev.stopPropagation(); if(h.to==='#empty') document.getElementById('zEmpty').click(); else if(h.to.charAt(0)==='#') openBig(); else go(idx[h.to]);};
     hots.appendChild(e);
   });
