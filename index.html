@@ -652,6 +652,7 @@ function buildPlan2D(host, big){
     el.style.left=r.x+'%'; el.style.top=r.y+'%';
     el.innerHTML='<i>'+(WALK[r.node]||'')+'</i><b>'+r.name+'</b>';
     el.onclick=e=>{ e.stopPropagation();
+      if(document.body.classList.contains('intro') || timer) return;   // locked on the opening screen and during the auto tour
       if(LEAD.show && (LEAD.gate||{}).mode==='plan' && !unlocked){ openLead(true); return; }
       go(idx[r.node]); };
     box.appendChild(el);
