@@ -41,6 +41,7 @@ button.tb{
   color:var(--txt);font:inherit;font-size:12.5px;cursor:pointer;transition:.18s ease;white-space:nowrap
 }
 button.tb:hover{background:rgba(40,42,46,.9);border-color:rgba(255,255,255,.26)}
+.tb:active{background:var(--accent)!important;border-color:var(--accent)!important;color:#1a1509!important;transform:scale(.96)}
 button.tb.on{background:var(--accent);border-color:var(--accent);color:#1a1509;font-weight:600}
 button.tb svg{width:15px;height:15px;flex:none}
 @media(max-width:760px){ button.tb span{display:none} button.tb{padding:0 10px;height:34px;gap:0} .tools{gap:6px} .brand b{font-size:15px} .brand small{font-size:9px;letter-spacing:.08em} header{padding:12px 14px;gap:8px} }
@@ -961,6 +962,10 @@ bPlay.onclick=()=>{
 };
 bFull.onclick=()=>{ document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.(); };
 bHelp.onclick=()=>help.classList.add('on');
+new MutationObserver(()=>bHelp.classList.toggle('on',help.classList.contains('on'))).observe(help,{attributes:true,attributeFilter:['class']});
+document.addEventListener('fullscreenchange',()=>bFull.classList.toggle('on',!!document.fullscreenElement));
+(()=>{const le=document.getElementById('lead'),lb=document.getElementById('bLead');
+  if(le&&lb) new MutationObserver(()=>lb.classList.toggle('on',le.classList.contains('on'))).observe(le,{attributes:true,attributeFilter:['class']});})();
 
 /* ---- lead capture ---- */
 const lead=document.getElementById('lead'), bLead=document.getElementById('bLead'), leadForm=document.getElementById('leadForm');
