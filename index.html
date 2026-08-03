@@ -672,11 +672,24 @@ function buildPlan2D(host, big){
   return box;
 }
 function updRoute(){
+  if(typeof TOURSEQ==='undefined') return;
+  if(!window.__seqPts){
+    // the drawn route follows the ACTUAL walk (incl. the hallway pass-throughs), not straight lines through walls
+    const pts=[];
+    TOURSEQ.forEach(st=>{
+      const nid=(typeof AVALIAS!=='undefined'&&AVALIAS[st.n])||st.n;
+      const r=(PLAN2D.rooms||[]).find(x=>x.node===nid); if(!r) return;
+      const l=pts[pts.length-1];
+      if(l&&l.x===r.x&&l.y===r.y){ if(st.t){ l.n=st.n; l.t=1; } return; }
+      pts.push({x:r.x,y:r.y,n:st.n,t:st.t});
+    });
+    let nw=99;
+    for(let i=pts.length-1;i>=0;i--){ if(pts[i].t) nw=WALK[pts[i].n]||nw; pts[i].rev=nw; }
+    window.__seqPts=pts;
+  }
   const w=WALK[curNode]||0;
-  (window.__routes||[]).forEach(o=>{
-    const pts=o.rp.filter(r=>(WALK[r.node]||99)<=w);
-    o.p.setAttribute('d', pts.length>1 ? 'M '+pts.map(q=>q.x+' '+q.y).join(' L ') : '');
-  });
+  const pts=window.__seqPts.filter(r=>r.rev<=w);
+  (window.__routes||[]).forEach(o=>o.p.setAttribute('d', pts.length>1 ? 'M '+pts.map(q=>q.x+' '+q.y).join(' L ') : ''));
 }
 const AVALIAS={twilight:'foyer',dining2:'dining1',pbath2:'pbath',family2:'family1',fkf:'family1',kbf:'kitchen'};
 function updAvatar(){
