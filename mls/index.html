@@ -276,9 +276,14 @@ body.touring .hot{display:none!important}
 .lfrow .req{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:#e05252;font-size:16px;pointer-events:none}
 #leadForm .reqnote{font-size:10.5px;color:#e05252;margin:-4px 0 2px}
 body.touring #plan .pin,body.touring #strip,body.touring #big,body.touring .th{pointer-events:none!important}
+/* opening screen: plan pins locked, Auto tour blinks red */
+body.intro #plan .pin{pointer-events:none!important}
+body.intro #plan .pin i{opacity:.55}
+body.intro #bPlay:not(.on){animation:bpRed 1.05s ease-in-out infinite;border-color:#e05252}
+@keyframes bpRed{0%,100%{background:rgba(28,29,33,.85);color:#e8eaee}50%{background:#e05252;border-color:#e05252;color:#fff}}
 </style>
 </head>
-<body>
+<body class="intro">
 <div id="app">
 
   <main>
@@ -754,6 +759,7 @@ function go(i){
   });
   small.active = n.room || null; if(window.bigDH) bigDH.active = n.room || null;
   if(n.id!=='yard') window.__fin=false;
+  document.body.classList.toggle('intro', n.id==='twilight');
   curNode = n.id; markPlan2D(n.id); if(typeof updRoute==='function') updRoute(); if(typeof updAvatar==='function') updAvatar();
   if(n.room) seen.add(n.room);
   gateCheck();
