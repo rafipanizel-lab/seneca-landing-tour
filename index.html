@@ -654,7 +654,15 @@ function buildPlan2D(host, big){
   rsvg.setAttribute('class','park route'); rsvg.setAttribute('viewBox','0 0 100 100'); rsvg.setAttribute('preserveAspectRatio','none');
   rsvg.innerHTML='<path d="'+rd+'" fill="none" stroke="rgba(180,67,44,.85)" stroke-width="1.1" stroke-dasharray="2.4 1.8" stroke-linejoin="round" stroke-linecap="round" style="animation:walkdash 1.6s linear infinite"/>';
   box.appendChild(rsvg);
+  (window.__routes=window.__routes||[]).push({p:rsvg.querySelector('path'), rp:rp});
   return box;
+}
+function updRoute(){
+  const w=WALK[curNode]||0;
+  (window.__routes||[]).forEach(o=>{
+    const pts=o.rp.filter(r=>(WALK[r.node]||99)<=w);
+    o.p.setAttribute('d', pts.length>1 ? 'M '+pts.map(q=>q.x+' '+q.y).join(' L ') : '');
+  });
 }
 function markPlan2D(node){
   document.querySelectorAll('.p2d .pin').forEach(p=>p.classList.toggle('act', p.dataset.node===node));
@@ -714,7 +722,7 @@ function go(i){
     if(j===i) t.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
   });
   small.active = n.room || null; if(window.bigDH) bigDH.active = n.room || null;
-  curNode = n.id; markPlan2D(n.id);
+  curNode = n.id; markPlan2D(n.id); if(typeof updRoute==='function') updRoute();
   if(n.room) seen.add(n.room);
   gateCheck();
   document.getElementById('pfRoom').textContent = n.room ? roomLabel(n.room) : 'Exterior';
