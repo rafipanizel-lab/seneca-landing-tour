@@ -256,6 +256,7 @@ body.strip #strip{transform:none}
 .pin.act::before{content:'';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:64px;height:64px;border-radius:50%;background:radial-gradient(circle,rgba(180,67,44,.5),rgba(180,67,44,0) 70%);pointer-events:none}
 @keyframes walkdash{to{stroke-dashoffset:-8.4}}
 .route{z-index:2}
+#zMus{display:none!important}
 </style>
 </head>
 <body>
@@ -917,7 +918,7 @@ function speakNode(i){
   if(!muted) fadeTo(0.06);
   const p=narr.play(); if(p&&p.catch) p.catch(()=>{ narrPlaying=false; });
 }
-narr.onended=()=>{ narrPlaying=false; if(!muted) fadeTo(timer?0.22:0.16);
+narr.onended=()=>{ narrPlaying=false; if(!timer && D[cur] && D[cur].id==='yard'){ musicOff(); } else if(!muted) fadeTo(timer?0.22:0.16);
   if(timer){ clearInterval(timer); timer=setInterval(tourAdvance,tourGap()); clearTimeout(tourT); tourT=setTimeout(tourAdvance,900); } };
 narr.onerror=()=>{ narrPlaying=false; if(timer) setTimeout(tourAdvance,4200); };
 zMute.classList.add('on'); zMute.title='Narration on \u2014 click to turn off';
