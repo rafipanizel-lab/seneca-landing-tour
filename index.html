@@ -728,7 +728,8 @@ function go(i){
   const fwdT=(n.hs||[]).map(x=>WALK[x.to]||0).filter(v=>v>hereW);
   const nextT=fwdT.length?Math.min.apply(null,fwdT):0;
   const FALLBK=['foyer','fkf','family1','breakfast','mud','guest','pbath','primary','gaming','kitchen'];
-  let pickedFB=false;
+  const hasSame=(n.hs||[]).some(x=>hereW>0&&(WALK[x.to]||0)===hereW);
+  let pickedFB=hasSame;   // an "another angle" link carries the walk onward — no fallback needed
   (n.hs||[]).forEach((h,k)=>{
     const e=document.createElement('div');
     // keep markers clear of the floor-plan card (shift right & down)
