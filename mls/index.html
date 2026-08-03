@@ -62,6 +62,7 @@ body.strip #zoomUI{bottom:126px}
 .zb.on{background:rgba(230,200,147,.92);color:#1a1509;border-color:transparent}
 .zb svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .zb{position:relative}
+.zb .zl .zlh{opacity:.75;font-weight:400}
 .zb .zl{position:absolute;right:43px;top:50%;transform:translateY(-50%);white-space:nowrap;
   font:500 10px ui-sans-serif,system-ui,sans-serif;letter-spacing:.05em;color:#d8dce2;
   background:rgba(12,13,15,.62);padding:2px 8px;border-radius:7px;pointer-events:none;
@@ -260,8 +261,8 @@ body.strip #strip{transform:none}
     <button id="motion"><svg viewBox="0 0 24 24"><path d="M7 4l12 8-12 8z"/></svg><span id="motionTxt">Play motion</span></button>
     <div id="scrub"><i></i></div><div id="scrubHint">drag left / right to walk</div>
     <div id="zoomUI">
-      <div class="zb" id="zIn" title="Zoom in (+)"><i class="zl">Zoom in</i><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M11 8v6M8 11h6M16.5 16.5L21 21"/></svg></div>
-      <div class="zb" id="zOut" title="Zoom out (−)"><i class="zl">Zoom out</i><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M8 11h6M16.5 16.5L21 21"/></svg></div>
+      <div class="zb" id="zIn" title="Zoom in (+)"><i class="zl">Zoom in <span class="zlh"></span></i><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M11 8v6M8 11h6M16.5 16.5L21 21"/></svg></div>
+      <div class="zb" id="zOut" title="Zoom out (−)"><i class="zl">Zoom out <span class="zlh"></span></i><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M8 11h6M16.5 16.5L21 21"/></svg></div>
       <div class="zb" id="zEmpty" title="See the room empty / staged" style="display:none"><i class="zl">Empty / staged</i>
         <svg viewBox="0 0 24 24"><path d="M4 18v-6M20 18v-6M4 12h16M6 12V8a2 2 0 012-2h8a2 2 0 012 2v4" opacity=".9"/><path d="M3 21L21 3" id="zEmptyStrike" style="display:none"/></svg>
       </div>
@@ -898,6 +899,8 @@ let kicked=false;
 function kickAudio(){ if(kicked) return; kicked=true; var sh=document.getElementById('sndHint'); if(sh) sh.remove(); if(!muted) musicOn(); if(narrOn) speakNode(cur); }
 window.addEventListener('pointerdown', kickAudio);
 window.addEventListener('keydown', kickAudio);
+(()=>{ const t=('ontouchstart' in window)||navigator.maxTouchPoints>0;
+  document.querySelectorAll('.zlh').forEach(e=>e.textContent = t ? '(or pinch with two fingers)' : '(or scroll the mouse wheel)'); })();
 window.addEventListener('beforeunload', stopSpeak);
 
 /* ---- the floor-plan card can be dragged by its header ---- */
