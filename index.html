@@ -289,7 +289,7 @@ body.strip #strip{transform:none}
       <button class="tb" id="bPlay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 4l12 8-12 8z"/></svg><span>Auto tour</span></button>
       <button class="tb" id="bFull"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span>Fullscreen</span></button>
       <button class="tb" id="bLead" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18v12H3z"/><path d="M3 7l9 6 9-6"/></svg><span>Contact</span></button>
-      <button class="tb" id="bHelp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 113.5 2.3c-.7.4-1 .9-1 1.7M12 17h.01"/></svg><span>Help</span></button>
+      <button class="tb" id="bReset" title="Start the tour over"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 2.6-6.4"/><path d="M3 4v5h5"/></svg><span style="display:inline-flex;flex-direction:column;align-items:flex-start;line-height:1.1">Reset<small style="font-size:8.5px;opacity:.75;font-weight:400">(start over)</small></span></button><button class="tb" id="bHelp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 113.5 2.3c-.7.4-1 .9-1 1.7M12 17h.01"/></svg><span>Help</span></button>
     </div>
   </header>
 
@@ -694,6 +694,7 @@ function go(i){
   document.getElementById('pfRoom').textContent = n.room ? roomLabel(n.room) : 'Exterior';
   if(typeof speakNode==='function') speakNode(i);
   emptyOn=false; updEmptyBtn(n);
+  if(n.empty){ const pe=new Image(); pe.src=n.empty; }   // preload so the toggle is instant
 }
 
 const pickRoom = r => { if(!r.node) return;
@@ -1123,5 +1124,12 @@ Then wander on your own &mdash; follow the arrows inside each photo; they trace 
   <div class="lg"><i style="color:#58c88f">&#9679; 1-story</i><i style="color:#8c92a0">&#9679; 2-story</i><i style="color:#e6c893">&#9733; this home</i></div>
 </div>
 <script>document.getElementById('miniMkt').onclick=function(){ openLead(true); };</script>
-</body>
+<script>
+document.getElementById('bReset').onclick=function(){
+  try{ if(timer){ document.getElementById('bPlay').click(); } }catch(e){}
+  try{ stopSpeak(); }catch(e){}
+  try{ document.getElementById('lead').classList.remove('on'); document.getElementById('help').classList.remove('on'); }catch(e){}
+  if(typeof cur!=='undefined' && cur!==0){ go(0); } else { try{ resetView(); }catch(e){} try{ speakNode(0); }catch(e){} }
+};
+</script></body>
 </html>
