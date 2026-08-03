@@ -278,7 +278,7 @@ body.strip #strip{transform:none}
   <header>
     <div class="brand"><b id="propName"></b><small id="propAddr"></small><small id="propAgent" style="color:var(--accent);letter-spacing:.06em;text-transform:none;margin-top:5px"></small></div>
     <div class="tools">
-      <button class="tb" id="bPlan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M12 12l9-5M12 12v10M12 12L3 7"/></svg><span>Floor plan</span></button>
+      <button class="tb on" id="bPlan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M12 12l9-5M12 12v10M12 12L3 7"/></svg><span>Floor plan</span></button>
       <button class="tb" id="bStrip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5h4v14H3zM10 5h4v14h-4zM17 5h4v14h-4z"/></svg><span>Photos</span></button>
       <button class="tb" id="bPlay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 4l12 8-12 8z"/></svg><span>Auto tour</span></button>
       <button class="tb" id="bMkt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V9M10 20V4M16 20v-8M21 20H3"/></svg><span>Market</span></button><button class="tb" id="bFull"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span>Fullscreen</span></button>
@@ -287,7 +287,7 @@ body.strip #strip{transform:none}
     </div>
   </header>
 
-  <aside id="plan" class="hide">
+  <aside id="plan">
     <div class="ph">
       <b>Floor Plan</b>
       <div class="sp">
@@ -885,7 +885,7 @@ zMute.onclick=()=>{
 };
 /* browsers only allow sound after the first tap \u2014 start everything then */
 let kicked=false;
-function kickAudio(){ if(kicked) return; kicked=true; if(!muted) musicOn(); if(narrOn) speakNode(cur); }
+function kickAudio(){ if(kicked) return; kicked=true; var sh=document.getElementById('sndHint'); if(sh) sh.remove(); if(!muted) musicOn(); if(narrOn) speakNode(cur); }
 window.addEventListener('pointerdown', kickAudio);
 window.addEventListener('keydown', kickAudio);
 window.addEventListener('beforeunload', stopSpeak);
@@ -1098,6 +1098,35 @@ go(0);
   if(b) b.onclick=function(){ syncGate(); m.classList.add('on'); };
   m.addEventListener('click',function(e){ if(e.target===m) m.classList.remove('on'); });
   window.addEventListener('keydown',function(e){ if(e.key==='Escape') m.classList.remove('on'); });
+})();
+</script>
+
+<style>
+#coach{position:fixed;z-index:70;transform:translateX(-50%);text-align:center;pointer-events:none}
+#coach .arr{font-size:26px;color:#e6c893;animation:coachB 1s ease-in-out infinite;text-shadow:0 2px 14px rgba(0,0,0,.8);line-height:1}
+@keyframes coachB{0%,100%{transform:translateY(0);opacity:1}50%{transform:translateY(7px);opacity:.55}}
+#coach .card{pointer-events:auto;margin-top:4px;max-width:280px;background:#16181d;border:1px solid rgba(230,200,147,.4);border-radius:12px;
+  padding:12px 14px;color:#e8eaee;font:500 12.5px/1.55 ui-sans-serif,system-ui,sans-serif;box-shadow:0 14px 40px rgba(0,0,0,.6);text-align:left}
+#coach .card b{color:#e6c893}
+#coach .ok{display:inline-block;margin-top:8px;background:#e6c893;color:#1a1509;border-radius:8px;padding:5px 12px;font-weight:700;cursor:pointer}
+#sndHint{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:69;background:rgba(20,22,26,.92);border:1px solid rgba(230,200,147,.5);
+  color:#e6c893;border-radius:999px;padding:9px 18px;font:600 13px ui-sans-serif,system-ui,sans-serif;animation:sndP 1.6s ease-in-out infinite;pointer-events:none}
+@keyframes sndP{0%,100%{opacity:1}50%{opacity:.45}}
+@media(max-width:760px){#coach .card{max-width:220px;font-size:11.5px}}
+</style>
+<div id="sndHint">&#128266; Tap anywhere for sound &amp; narration</div>
+<div id="coach"><div class="arr">&#9650;</div><div class="card">
+<b>Start here:</b> tap <b>Auto tour</b> above to see the whole home, start to finish.<br>
+Then wander on your own &mdash; follow the arrows inside each photo; they trace the natural walking flow of the house.
+<span class="ok" onclick="document.getElementById('coach').remove()">Got it</span>
+</div></div>
+<script>
+(function(){
+  var c=document.getElementById('coach'), b=document.getElementById('bPlay');
+  function place(){ if(!c||!b) return; var r=b.getBoundingClientRect(); c.style.left=(r.left+r.width/2)+'px'; c.style.top=(r.bottom+8)+'px'; }
+  place(); window.addEventListener('resize',place);
+  b.addEventListener('click',function(){ if(c){c.remove();c=null;} });
+  setTimeout(function(){ if(c){c.style.transition='opacity .8s';c.style.opacity='0';setTimeout(function(){c&&c.remove();c=null;},900);} },30000);
 })();
 </script>
 </body>
