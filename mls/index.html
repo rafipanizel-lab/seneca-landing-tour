@@ -134,8 +134,10 @@ body.strip #cap{bottom:126px}
   position:absolute;left:24px;top:84px;z-index:30;width:296px;
   background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
   backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
-  box-shadow:0 18px 50px rgba(0,0,0,.55);overflow:hidden;transition:.28s cubic-bezier(.4,0,.2,1)
+  box-shadow:0 18px 50px rgba(0,0,0,.55);overflow:hidden;transition:opacity .28s cubic-bezier(.4,0,.2,1), transform .95s cubic-bezier(.3,.7,.3,1)
 }
+#plan.focus{transform:translate(13vw,4vh) scale(1.85);z-index:60}
+.pav.fast{transition:none!important}
 #plan.hide{opacity:0;transform:translateX(-14px) scale(.97);pointer-events:none}
 #plan.dragging{transition:none}
 .ph{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line);cursor:grab;touch-action:none}
@@ -614,7 +616,7 @@ class Dollhouse{
 function buildPlan2D(host, big){
   const P=PLAN2D.parking;
   const svg='<svg class="park" viewBox="0 0 100 100" preserveAspectRatio="none">'
-    + '<rect x="'+P.x+'" y="'+P.y+'" width="'+P.w+'" height="'+P.h+'" fill="rgba(120,126,136,.10)" stroke="#5b5f66" stroke-width="0.55"/>'
+    + '<path d="M64 78.5 L79 78.5 L79 63.5 L94 63.5 L94 99 L64 99 Z" fill="rgba(120,126,136,.10)" stroke="#5b5f66" stroke-width="0.55"/>'
     + '</svg>';
   host.innerHTML='';
   const box=document.createElement('div');
@@ -979,17 +981,51 @@ function endTour(){
   musicOff();
   if(typeof LEAD!=='undefined' && LEAD.show) setTimeout(()=>openLead(true), 600);
 }
+function planWalk(nodes, done){
+  const plan=document.getElementById('plan');
+  const wasHidden=plan.classList.contains('hide'); if(wasHidden) plan.classList.remove('hide');
+  plan.classList.add('focus');
+  const pin=nid=>{ const a=(typeof AVALIAS!=='undefined'&&AVALIAS[nid])||nid; return (PLAN2D.rooms||[]).find(r=>r.node===a); };
+  const pts=[]; const c=pin(curNode); if(c) pts.push(c);
+  nodes.forEach(n=>{ const r=pin(n); if(r && !(pts.length&&pts[pts.length-1].x===r.x&&pts[pts.length-1].y===r.y)) pts.push(r); });
+  if(pts.length<2){ plan.classList.remove('focus'); if(wasHidden) plan.classList.add('hide'); done(); return; }
+  const segs=[]; let total=0;
+  for(let i=1;i<pts.length;i++){ const d=Math.hypot(pts[i].x-pts[i-1].x,(pts[i].y-pts[i-1].y)*1.35); segs.push(d); total+=d; }
+  const dur=Math.min(5200, 1100+total*55);
+  const avs=window.__avs||[]; avs.forEach(a=>a.classList.add('fast'));
+  const bases=(window.__routes||[]).map(o=>o.p.getAttribute('d')||'');
+  const t0=performance.now();
+  function frame(now){
+    let f=Math.min(1,(now-t0)/dur), dist=f*total, i=0;
+    while(i<segs.length && dist>segs[i]){ dist-=segs[i]; i++; }
+    const a=pts[Math.min(i,pts.length-2)], b=pts[Math.min(i+1,pts.length-1)];
+    const g=segs[Math.min(i,segs.length-1)]||1, u=Math.min(1,dist/g);
+    const x=a.x+(b.x-a.x)*u, y=a.y+(b.y-a.y)*u;
+    avs.forEach(av=>{ av.style.opacity='1'; av.style.left=x+'%'; av.style.top=y+'%'; });
+    (window.__routes||[]).forEach((o,k)=>{
+      let d=bases[k];
+      let seg=' L '+pts.slice(1,i+1).map(q=>q.x+' '+q.y).join(' L ');
+      if(i<1) seg='';
+      const head=(d?d:'M '+pts[0].x+' '+pts[0].y)+seg+' L '+x.toFixed(1)+' '+y.toFixed(1);
+      o.p.setAttribute('d', head);
+    });
+    if(f<1){ requestAnimationFrame(frame); }
+    else{
+      avs.forEach(a2=>a2.classList.remove('fast'));
+      setTimeout(()=>{ plan.classList.remove('focus'); if(wasHidden) plan.classList.add('hide'); }, 350);
+      done();
+    }
+  }
+  requestAnimationFrame(frame);
+}
 function tourAdvance(){
   if(!timer) return;
-  tourP++;
-  if(tourP>=TOURSEQ.length){ endTour(); return; }
-  const st=TOURSEQ[tourP];
-  window.__transit = !st.t;
-  go(idx[st.n]);
-  window.__transit = false;
-  const wk=document.getElementById('walker');
-  if(!st.t){ if(wk){wk.classList.remove('on'); void wk.offsetWidth; wk.classList.add('on');} clearTimeout(tourT); tourT=setTimeout(tourAdvance, 3600); }
-  else if(wk) wk.classList.remove('on');
+  const way=[]; let p=tourP+1;
+  while(p<TOURSEQ.length && !TOURSEQ[p].t){ way.push(TOURSEQ[p].n); p++; }
+  if(p>=TOURSEQ.length){ endTour(); return; }
+  const target=TOURSEQ[p]; tourP=p;
+  if(way.length){ stopSpeak(); planWalk(way.concat([target.n]), ()=>{ if(timer) go(idx[target.n]); }); }
+  else go(idx[target.n]);
 }
 function retime(){ if(timer){ clearInterval(timer); timer=setInterval(tourAdvance, tourGap()); } }
 /* browsers only allow sound after the first tap \u2014 start everything then */
