@@ -150,12 +150,13 @@ canvas.dh{display:block;width:100%;cursor:grab;touch-action:none}
 .p2d{position:relative;display:block;width:100%;background:#f7f5f1;overflow:hidden}
 .p2d img{display:block;width:100%;height:auto;-webkit-user-drag:none}
 .p2d .pin{position:absolute;transform:translate(-50%,-50%);cursor:pointer;z-index:3}
-.p2d .pin i{display:block;width:15px;height:15px;border-radius:50%;background:var(--accent);
-  border:2px solid #1a1509;box-shadow:0 2px 6px rgba(0,0,0,.4);transition:.16s}
+.p2d .pin i{display:grid;place-items:center;width:15px;height:15px;border-radius:50%;background:var(--accent);
+  border:2px solid #1a1509;box-shadow:0 2px 6px rgba(0,0,0,.4);transition:.16s;
+  font:700 8px ui-sans-serif,system-ui;color:#1a1509;font-style:normal}
 .p2d .pin::after{content:"";position:absolute;inset:-7px;border-radius:50%;border:1.5px solid rgba(201,168,106,.85);
   animation:ring 2.8s ease-out infinite}
 .p2d .pin:hover i{transform:scale(1.45);background:#fff}
-.p2d .pin.act i{background:#b4432c;transform:scale(1.35)}
+.p2d .pin.act i{background:#b4432c;transform:scale(1.35);color:#fff}
 .p2d .pin.act::after{border-color:rgba(180,67,44,.9)}
 .p2d .pin b{position:absolute;left:50%;top:-9px;transform:translate(-50%,-100%);white-space:nowrap;
   font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;background:#1a1509;color:#f7efdd;
@@ -630,7 +631,7 @@ function buildPlan2D(host, big){
     const el=document.createElement('div');
     el.className='pin'; el.dataset.node=r.node;
     el.style.left=r.x+'%'; el.style.top=r.y+'%';
-    el.innerHTML='<i></i><b>'+r.name+'</b>';
+    el.innerHTML='<i>'+(WALK[r.node]||'')+'</i><b>'+r.name+'</b>';
     el.onclick=e=>{ e.stopPropagation();
       if(LEAD.show && (LEAD.gate||{}).mode==='plan' && !unlocked){ openLead(true); return; }
       go(idx[r.node]); };
@@ -676,8 +677,11 @@ function go(i){
     // left-edge hotspots would sit under the floor-plan card, so drop them below it
     const hx=h.x, hy=(hx<22 ? Math.max(h.y,66) : h.y);
     e.className='hot'; e.style.left=hx+'%'; e.style.top=hy+'%'; e.style.animationDelay=(120+k*90)+'ms';
-    const wn=WALK[h.to]||'';
-    e.innerHTML='<div class="disc">'+(ICON[h.dir]||ICON.fwd)+(wn?'<span class="wnum">'+wn+'</span>':'')+'</div><div class="lab">'+h.label+'</div>';
+    const here=WALK[n.id]||0, tgt=WALK[h.to]||0;
+    const wn=(tgt&&tgt>here)?tgt:'';
+    let hlab=h.label;
+    if(tgt&&tgt<=here&&(h.to==='foyer'||h.to==='fkf')) hlab='Back to the hall &middot; continue the tour';
+    e.innerHTML='<div class="disc">'+(ICON[h.dir]||ICON.fwd)+(wn?'<span class="wnum">'+wn+'</span>':'')+'</div><div class="lab">'+hlab+'</div>';
     e.ondblclick=ev=>{ev.stopPropagation(); ev.preventDefault(); if(h.to.charAt(0)!=='#') go(idx[h.to]);};
     e.onclick=ev=>{ev.stopPropagation(); if(h.to==='#empty') document.getElementById('zEmpty').click(); else if(h.to.charAt(0)==='#') openBig(); else go(idx[h.to]);};
     hots.appendChild(e);
