@@ -930,8 +930,8 @@ function speakNode(i){
   const p=narr.play(); if(p&&p.catch) p.catch(()=>{ narrPlaying=false; });
 }
 narr.onended=()=>{ narrPlaying=false; if(!muted) fadeTo(timer?0.22:0.16);
-  if(timer){ clearInterval(timer); timer=setInterval(nxt,tourGap()); setTimeout(nxt,900); } };
-narr.onerror=()=>{ narrPlaying=false; if(timer) setTimeout(nxt,4200); };
+  if(timer){ clearInterval(timer); timer=setInterval(tourAdvance,tourGap()); setTimeout(tourAdvance,900); } };
+narr.onerror=()=>{ narrPlaying=false; if(timer) setTimeout(tourAdvance,4200); };
 zMute.classList.add('on'); zMute.title='Narration on \u2014 click to turn off';
 zMute.onclick=()=>{
   narrOn=!narrOn; zMute.classList.toggle('on',narrOn);
@@ -940,7 +940,15 @@ zMute.onclick=()=>{
   retime();
 };
 function tourGap(){ return narrOn ? 45000 : 4800; }
-function retime(){ if(timer){ clearInterval(timer); timer=setInterval(nxt, tourGap()); } }
+function tourAdvance(){
+  if(!timer) return;
+  if(cur>=D.length-1){                     // full loop done: stop and ask for details
+    clearInterval(timer); timer=null; bPlay.classList.remove('on');
+    if(!muted) fadeTo(0.16);
+    if(typeof LEAD!=='undefined' && LEAD.show) setTimeout(()=>openLead(true), 600);
+  } else nxt();
+}
+function retime(){ if(timer){ clearInterval(timer); timer=setInterval(tourAdvance, tourGap()); } }
 /* browsers only allow sound after the first tap \u2014 start everything then */
 let kicked=false;
 function kickAudio(){ if(kicked) return; kicked=true; var sh=document.getElementById('sndHint'); if(sh) sh.remove(); if(!muted) musicOn(); if(narrOn) speakNode(cur); }
@@ -997,7 +1005,7 @@ zEmpty.onclick=()=>{
 
 bPlay.onclick=()=>{
   if(timer){ clearInterval(timer); timer=null; bPlay.classList.remove('on'); if(!muted) fadeTo(0.16); stopSpeak(); }
-  else { if(!narrOn){narrOn=true;zMute.classList.add('on');zMute.title='Narration on \u2014 click to turn off';} timer=setInterval(nxt,tourGap()); bPlay.classList.add('on'); musicOn(); speakNode(cur); }
+  else { if(!narrOn){narrOn=true;zMute.classList.add('on');zMute.title='Narration on \u2014 click to turn off';} timer=setInterval(tourAdvance,tourGap()); bPlay.classList.add('on'); musicOn(); speakNode(cur); }
 };
 bFull.onclick=()=>{ document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.(); };
 bHelp.onclick=()=>help.classList.add('on');
