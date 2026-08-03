@@ -664,7 +664,8 @@ function updRoute(){
       const r=(PLAN2D.rooms||[]).find(x=>x.node===nid); if(!r) return;
       const l=pts[pts.length-1];
       if(l&&l.x===r.x&&l.y===r.y){ if(st.t){ l.n=st.n; l.t=1; } return; }
-      pts.push({x:r.x,y:r.y,n:st.n,t:st.t});
+      if(l&&l.pn){ (WAYPATH[l.pn+'>'+r.node]||[]).forEach(q=>pts.push({x:q[0],y:q[1],t:0})); }
+      pts.push({x:r.x,y:r.y,n:st.n,t:st.t,pn:r.node});
     });
     let nw=99;
     for(let i=pts.length-1;i>=0;i--){ if(pts[i].t) nw=WALK[pts[i].n]||nw; pts[i].rev=nw; }
@@ -983,26 +984,37 @@ function endTour(){
   if(typeof LEAD!=='undefined' && LEAD.show) setTimeout(()=>openLead(true), 600);
 }
 const WAYPATH={
- 'office>foyer':[[33,88]],
- 'foyer>bed_f':[[36,82],[33.5,79]],
- 'bed_f>foyer':[[33.5,79],[36,82]],
- 'bed_m>foyer':[[33.5,56],[33.5,72],[33.5,79],[38,84]],
- 'foyer>mud':[[47,80],[55,75],[63,74]],
- 'mud>foyer':[[63,74],[55,75],[47,80]],
- 'mud>garage':[[72,80]],
- 'garage>mud':[[72,80]],
- 'utility>breakfast':[[82,49]],
- 'breakfast>utility':[[82,49]],
- 'breakfast>gaming':[[78,38]],
- 'gaming>breakfast':[[78,38]],
- 'breakfast>family1':[[70,45],[60,42],[52,36]],
- 'primary>family1':[[36,20],[44,24]],
- 'family1>primary':[[44,24],[36,20]],
- 'family1>guest':[[62,30],[72,28],[80,22]],
- 'guest>family1':[[80,22],[72,28],[62,30]],
- 'guest>bath2':[[76,12]],
- 'bath2>guest':[[76,12]],
- 'family1>yard':[[48,14]]
+ 'office>foyer':[[37,89.5]],
+ 'foyer>office':[[37,89.5]],
+ 'dining1>office':[[47,88],[40,88.5],[37,90]],
+ 'foyer>dining1':[],
+ 'foyer>bed_f':[[41,82],[35.5,76.5]],
+ 'bed_f>foyer':[[35.5,76.5],[41,82]],
+ 'bed_f>bath_h':[[35.5,76],[35,70],[33.5,67.5]],
+ 'bath_h>bed_m':[[33.5,67.5],[35,63],[34,61]],
+ 'bed_m>foyer':[[34,61],[35,67],[35.5,75],[38,79],[41,83]],
+ 'foyer>mud':[[43,80],[43.5,64],[52,63],[61,65.5],[67,70.5]],
+ 'mud>foyer':[[67,70.5],[61,65.5],[52,63],[43.5,64],[43,80]],
+ 'mud>garage':[[74,77]],
+ 'garage>mud':[[74,77]],
+ 'butler>kitchen':[[63,65.5],[61,55]],
+ 'kitchen>butler':[[61,55],[63,65.5]],
+ 'breakfast>utility':[[76,49],[75,53]],
+ 'utility>breakfast':[[75,53],[76,49]],
+ 'breakfast>gaming':[[69,41],[66.5,36]],
+ 'gaming>breakfast':[[66.5,36],[69,41]],
+ 'breakfast>family1':[[68,42],[58,40],[51,35]],
+ 'family1>primary':[[37,22],[33.5,20.5]],
+ 'primary>family1':[[33.5,20.5],[37,22]],
+ 'primary>pbath':[[30.5,23.5]],
+ 'pbath>primary':[[30.5,23.5]],
+ 'pbath>closet':[[29,40.5]],
+ 'closet>pbath':[[29,40.5]],
+ 'family1>guest':[[58,18],[64,14.5],[73,13.5]],
+ 'guest>family1':[[73,13.5],[64,14.5],[58,18]],
+ 'guest>bath2':[[74,11]],
+ 'bath2>guest':[[74,11]],
+ 'family1>yard':[[48,16],[47.5,9]]
 };
 function planWalk(nodes, done){
   const plan=document.getElementById('plan');
