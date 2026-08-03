@@ -661,7 +661,7 @@ function buildPlan2D(host, big){
   const rd='M '+rp.map(p=>p.x+' '+p.y).join(' L ');
   const rsvg=document.createElementNS('http://www.w3.org/2000/svg','svg');
   rsvg.setAttribute('class','park route'); rsvg.setAttribute('viewBox','0 0 100 100'); rsvg.setAttribute('preserveAspectRatio','none');
-  rsvg.innerHTML='<path d="'+rd+'" fill="none" stroke="rgba(180,67,44,.85)" stroke-width="1.1" stroke-dasharray="2.4 1.8" stroke-linejoin="round" stroke-linecap="round" style="animation:walkdash 1.6s linear infinite"/>';
+  rsvg.innerHTML='<path d="'+rd+'" fill="none" stroke="rgba(180,67,44,.85)" stroke-width="1.1" stroke-dasharray="2.4 1.8" stroke-linejoin="round" stroke-linecap="round"/>';
   box.appendChild(rsvg);
   (window.__routes=window.__routes||[]).push({p:rsvg.querySelector('path'), rp:rp});
   const av=document.createElement('div'); av.className='pav'; av.innerHTML='<svg viewBox="0 0 64 64"><g fill="#fff"><circle cx="34" cy="9" r="6"/><path d="M30 17l9 2 3 11 9 6-3 5-10-7-2 8 8 13-6 4-9-14-7 8-2 13h-6l3-16 7-10-2-9-6 6-5-3 9-11z"/></g></svg>';
@@ -990,7 +990,7 @@ function tourGap(){ return narrOn ? 45000 : 4800; }
 const TOURSEQ=[
  {n:'twilight',t:1},{n:'foyer',t:1},{n:'dining1',t:1},{n:'dining2',t:1},{n:'office',t:1},
  {n:'foyer',t:0},{n:'bed_f',t:1},{n:'bath_h',t:1},{n:'bed_m',t:1},
- {n:'foyer',t:0},{n:'mud',t:1},{n:'garage',t:1},
+ {n:'mud',t:1},{n:'garage',t:1},
  {n:'mud',t:0},{n:'butler',t:1},{n:'kitchen',t:1},{n:'kbf',t:1},{n:'breakfast',t:1},{n:'utility',t:1},
  {n:'breakfast',t:0},{n:'gaming',t:1},
  {n:'breakfast',t:0},{n:'fkf',t:1},{n:'family1',t:1},
@@ -1034,6 +1034,7 @@ const WAYPATH={
  'bed_f>bath_h':[[35.5,76],[35,70],[33.5,67.5]],
  'bath_h>bed_m':[[33.5,67.5],[35,63],[34,61]],
  'bed_m>foyer':[[34.5,57],[35,62],[35.3,68],[35.5,74],[37.5,78],[40.5,82.5]],
+ 'bed_m>mud':[[34.5,57.5],[35.5,60.8],[36.8,61.8],[41,62.4],[47,62.8],[53,63],[59,64.5],[63,66.5],[67,70]],
  'foyer>mud':[[43,80],[43.5,64],[52,63],[61,65.5],[67,70.5]],
  'mud>foyer':[[67,70.5],[61,65.5],[52,63],[43.5,64],[43,80]],
  'mud>garage':[[74,77]],
