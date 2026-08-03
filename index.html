@@ -958,7 +958,7 @@ zEmpty.onclick=()=>{
 
 bPlay.onclick=()=>{
   if(timer){ clearInterval(timer); timer=null; bPlay.classList.remove('on'); if(!muted) fadeTo(0.16); stopSpeak(); }
-  else { timer=setInterval(nxt,tourGap()); bPlay.classList.add('on'); nxt(); musicOn(); }
+  else { if(!narrOn){narrOn=true;zMute.classList.add('on');zMute.title='Narration on \u2014 click to turn off';} timer=setInterval(nxt,tourGap()); bPlay.classList.add('on'); nxt(); musicOn(); }
 };
 bFull.onclick=()=>{ document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.(); };
 bHelp.onclick=()=>help.classList.add('on');
