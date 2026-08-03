@@ -718,7 +718,7 @@ function go(i){
   if(n.room) seen.add(n.room);
   gateCheck();
   document.getElementById('pfRoom').textContent = n.room ? roomLabel(n.room) : 'Exterior';
-  if(typeof speakNode==='function') speakNode(i);
+  if(typeof speakNode==='function'){ if(window.__transit) stopSpeak(); else speakNode(i); }
   emptyOn=false; updEmptyBtn(n);
   if(n.empty){ const pe=new Image(); pe.src=n.empty; }   // preload so the toggle is instant
 }
@@ -930,7 +930,7 @@ function speakNode(i){
   const p=narr.play(); if(p&&p.catch) p.catch(()=>{ narrPlaying=false; });
 }
 narr.onended=()=>{ narrPlaying=false; if(!muted) fadeTo(timer?0.22:0.16);
-  if(timer){ clearInterval(timer); timer=setInterval(tourAdvance,tourGap()); setTimeout(tourAdvance,900); } };
+  if(timer){ clearInterval(timer); timer=setInterval(tourAdvance,tourGap()); clearTimeout(tourT); tourT=setTimeout(tourAdvance,900); } };
 narr.onerror=()=>{ narrPlaying=false; if(timer) setTimeout(tourAdvance,4200); };
 zMute.classList.add('on'); zMute.title='Narration on \u2014 click to turn off';
 zMute.onclick=()=>{
@@ -940,13 +940,31 @@ zMute.onclick=()=>{
   retime();
 };
 function tourGap(){ return narrOn ? 45000 : 4800; }
+const TOURSEQ=[
+ {n:'twilight',t:1},{n:'foyer',t:1},{n:'dining1',t:1},{n:'dining2',t:1},{n:'office',t:1},
+ {n:'foyer',t:0},{n:'bed_f',t:1},{n:'bath_h',t:1},{n:'bed_m',t:1},
+ {n:'foyer',t:0},{n:'fkf',t:0},{n:'family1',t:1},{n:'family2',t:1},{n:'fkf',t:1},
+ {n:'primary',t:1},{n:'pbath',t:1},{n:'pbath2',t:1},{n:'closet',t:1},
+ {n:'primary',t:0},{n:'fkf',t:0},{n:'kitchen',t:1},{n:'kbf',t:1},{n:'breakfast',t:1},{n:'gaming',t:1},
+ {n:'breakfast',t:0},{n:'family1',t:0},{n:'guest',t:1},{n:'bath2',t:1},
+ {n:'kitchen',t:0},{n:'butler',t:1},{n:'mud',t:1},{n:'garage',t:1},{n:'mud',t:0},{n:'utility',t:1},
+ {n:'breakfast',t:0},{n:'family2',t:0},{n:'yard',t:1}
+];
+let tourP=-1, tourT=null; window.__transit=false;
+function endTour(){
+  clearInterval(timer); timer=null; clearTimeout(tourT); bPlay.classList.remove('on');
+  musicOff();
+  if(typeof LEAD!=='undefined' && LEAD.show) setTimeout(()=>openLead(true), 600);
+}
 function tourAdvance(){
   if(!timer) return;
-  if(cur>=D.length-1){                     // full loop done: stop and ask for details
-    clearInterval(timer); timer=null; bPlay.classList.remove('on');
-    musicOff();
-    if(typeof LEAD!=='undefined' && LEAD.show) setTimeout(()=>openLead(true), 600);
-  } else nxt();
+  tourP++;
+  if(tourP>=TOURSEQ.length){ endTour(); return; }
+  const st=TOURSEQ[tourP];
+  window.__transit = !st.t;
+  go(idx[st.n]);
+  window.__transit = false;
+  if(!st.t){ clearTimeout(tourT); tourT=setTimeout(tourAdvance, 2000); }
 }
 function retime(){ if(timer){ clearInterval(timer); timer=setInterval(tourAdvance, tourGap()); } }
 /* browsers only allow sound after the first tap \u2014 start everything then */
@@ -1004,8 +1022,12 @@ zEmpty.onclick=()=>{
 };
 
 bPlay.onclick=()=>{
-  if(timer){ clearInterval(timer); timer=null; bPlay.classList.remove('on'); musicOff(); stopSpeak(); }
-  else { if(!narrOn){narrOn=true;zMute.classList.add('on');zMute.title='Narration on \u2014 click to turn off';} timer=setInterval(tourAdvance,tourGap()); bPlay.classList.add('on'); musicOn(); speakNode(cur); }
+  if(timer){ clearInterval(timer); timer=null; clearTimeout(tourT); bPlay.classList.remove('on'); musicOff(); stopSpeak(); }
+  else { if(!narrOn){narrOn=true;zMute.classList.add('on');zMute.title='Narration on \u2014 click to turn off';} timer=setInterval(tourAdvance,tourGap()); bPlay.classList.add('on'); musicOn();
+    tourP=TOURSEQ.findIndex(st=>st.t&&st.n===D[cur].id); if(tourP<0) tourP=0;
+    const st0=TOURSEQ[tourP];
+    if(D[cur].id===st0.n){ if(st0.t) speakNode(cur); else { clearTimeout(tourT); tourT=setTimeout(tourAdvance,1200); } }
+    else { tourP--; tourAdvance(); } }
 };
 bFull.onclick=()=>{ document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.(); };
 bHelp.onclick=()=>help.classList.add('on');
