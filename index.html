@@ -269,6 +269,7 @@ body.strip #strip{transform:none}
 .pav{position:absolute;width:17px;transform:translate(-50%,-88%);z-index:4;opacity:0;pointer-events:none;
   transition:left 1.7s ease,top 1.7s ease,opacity .4s;filter:drop-shadow(0 1px 3px rgba(0,0,0,.7))}
 .pav svg{width:100%;height:auto;opacity:.95}
+body.touring .hot{display:none!important}
 </style>
 </head>
 <body>
@@ -996,18 +997,46 @@ const TOURSEQ=[
 ];
 let tourP=-1, tourT=null; window.__transit=false;
 function endTour(){
-  clearInterval(timer); timer=null; clearTimeout(tourT); bPlay.classList.remove('on');
+  clearInterval(timer); timer=null; clearTimeout(tourT); bPlay.classList.remove('on'); document.body.classList.remove('touring');
   const wk=document.getElementById('walker'); if(wk) wk.classList.remove('on');
   musicOff();
   if(typeof LEAD!=='undefined' && LEAD.show) setTimeout(()=>openLead(true), 600);
 }
+const WAYPATH={
+ 'office>foyer':[[33,88]],
+ 'foyer>bed_f':[[36,82],[33.5,79]],
+ 'bed_f>foyer':[[33.5,79],[36,82]],
+ 'bed_m>foyer':[[33.5,56],[33.5,72],[33.5,79],[38,84]],
+ 'foyer>mud':[[47,80],[55,75],[63,74]],
+ 'mud>foyer':[[63,74],[55,75],[47,80]],
+ 'mud>garage':[[72,80]],
+ 'garage>mud':[[72,80]],
+ 'utility>breakfast':[[82,49]],
+ 'breakfast>utility':[[82,49]],
+ 'breakfast>gaming':[[78,38]],
+ 'gaming>breakfast':[[78,38]],
+ 'breakfast>family1':[[70,45],[60,42],[52,36]],
+ 'primary>family1':[[36,20],[44,24]],
+ 'family1>primary':[[44,24],[36,20]],
+ 'family1>guest':[[62,30],[72,28],[80,22]],
+ 'guest>family1':[[80,22],[72,28],[62,30]],
+ 'guest>bath2':[[76,12]],
+ 'bath2>guest':[[76,12]],
+ 'family1>yard':[[48,14]]
+};
 function planWalk(nodes, done){
   const plan=document.getElementById('plan');
   const wasHidden=plan.classList.contains('hide'); if(wasHidden) plan.classList.remove('hide');
   plan.classList.add('focus');
   const pin=nid=>{ const a=(typeof AVALIAS!=='undefined'&&AVALIAS[nid])||nid; return (PLAN2D.rooms||[]).find(r=>r.node===a); };
-  const pts=[]; const c=pin(curNode); if(c) pts.push(c);
-  nodes.forEach(n=>{ const r=pin(n); if(r && !(pts.length&&pts[pts.length-1].x===r.x&&pts[pts.length-1].y===r.y)) pts.push(r); });
+  const stops=[]; const c=pin(curNode); if(c) stops.push(c);
+  nodes.forEach(n=>{ const r=pin(n); if(r && !(stops.length&&stops[stops.length-1].x===r.x&&stops[stops.length-1].y===r.y)) stops.push(r); });
+  // walk only through doors: insert the doorway waypoints between rooms
+  const pts=[];
+  for(let i=0;i<stops.length;i++){
+    if(i){ const w=WAYPATH[stops[i-1].node+'>'+stops[i].node]||[]; w.forEach(q=>pts.push({x:q[0],y:q[1]})); }
+    pts.push(stops[i]);
+  }
   if(pts.length<2){ plan.classList.remove('focus'); if(wasHidden) plan.classList.add('hide'); done(); return; }
   const segs=[]; let total=0;
   for(let i=1;i<pts.length;i++){ const d=Math.hypot(pts[i].x-pts[i-1].x,(pts[i].y-pts[i-1].y)*1.35); segs.push(d); total+=d; }
@@ -1103,8 +1132,8 @@ zEmpty.onclick=()=>{
 };
 
 bPlay.onclick=()=>{
-  if(timer){ clearInterval(timer); timer=null; clearTimeout(tourT); bPlay.classList.remove('on'); musicOff(); stopSpeak(); const wk=document.getElementById('walker'); if(wk) wk.classList.remove('on'); }
-  else { if(!narrOn){narrOn=true;zMute.classList.add('on');zMute.title='Narration on \u2014 click to turn off';} timer=setInterval(tourAdvance,tourGap()); bPlay.classList.add('on'); musicOn();
+  if(timer){ clearInterval(timer); timer=null; clearTimeout(tourT); bPlay.classList.remove('on'); document.body.classList.remove('touring'); musicOff(); stopSpeak(); const wk=document.getElementById('walker'); if(wk) wk.classList.remove('on'); }
+  else { if(!narrOn){narrOn=true;zMute.classList.add('on');zMute.title='Narration on \u2014 click to turn off';} timer=setInterval(tourAdvance,tourGap()); bPlay.classList.add('on'); document.body.classList.add('touring'); musicOn();
     tourP=TOURSEQ.findIndex(st=>st.t&&st.n===D[cur].id);
     stopSpeak(); tourAdvance(); }
 };
