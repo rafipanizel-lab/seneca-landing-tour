@@ -437,7 +437,7 @@ const LEAD = {
            "plan"  the floor-plan markers ask first
      free:  how many rooms are free before "after" kicks in
      skip:  true lets a visitor dismiss the gate and carry on               */
-  gate: { mode: "after", free: 6, skip: true,
+  gate: { mode: "off", free: 6, skip: true,
           title: "See the rest of the home",
           blurb: "Leave your details and the full walkthrough, the 3D model and the floor plan open up \u2014 we\u2019ll also send you the plan by email." }
 };
@@ -957,7 +957,7 @@ function speakNode(i){
   if(!muted) fadeTo(0.06);
   const p=narr.play(); if(p&&p.catch) p.catch(()=>{ narrPlaying=false; });
 }
-narr.onended=()=>{ narrPlaying=false; if(!timer && D[cur] && D[cur].id==='yard'){ musicOff(); } else if(!muted) fadeTo(timer?0.22:0.16);
+narr.onended=()=>{ narrPlaying=false; if(!timer && D[cur] && D[cur].id==='yard'){ musicOff(); if(typeof LEAD!=='undefined'&&LEAD.show) setTimeout(()=>openLead(true),800); } else if(!muted) fadeTo(timer?0.22:0.16);
   if(timer){ clearInterval(timer); timer=setInterval(tourAdvance,tourGap()); clearTimeout(tourT); tourT=setTimeout(tourAdvance,900); } };
 narr.onerror=()=>{ narrPlaying=false; if(timer) setTimeout(tourAdvance,4200); };
 zMute.classList.add('on'); zMute.title='Narration on \u2014 click to turn off';
