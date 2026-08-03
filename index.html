@@ -904,6 +904,8 @@ zMute.onclick=()=>{
   if(narrOn) speakNode(cur); else { stopSpeak(); if(!muted) fadeTo(timer?0.22:0.16); }
   retime();
 };
+function tourGap(){ return narrOn ? 45000 : 4800; }
+function retime(){ if(timer){ clearInterval(timer); timer=setInterval(nxt, tourGap()); } }
 /* browsers only allow sound after the first tap \u2014 start everything then */
 let kicked=false;
 function kickAudio(){ if(kicked) return; kicked=true; var sh=document.getElementById('sndHint'); if(sh) sh.remove(); if(!muted) musicOn(); if(narrOn) speakNode(cur); }
