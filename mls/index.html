@@ -1085,10 +1085,8 @@ zEmpty.onclick=()=>{
 bPlay.onclick=()=>{
   if(timer){ clearInterval(timer); timer=null; clearTimeout(tourT); bPlay.classList.remove('on'); musicOff(); stopSpeak(); const wk=document.getElementById('walker'); if(wk) wk.classList.remove('on'); }
   else { if(!narrOn){narrOn=true;zMute.classList.add('on');zMute.title='Narration on \u2014 click to turn off';} timer=setInterval(tourAdvance,tourGap()); bPlay.classList.add('on'); musicOn();
-    tourP=TOURSEQ.findIndex(st=>st.t&&st.n===D[cur].id); if(tourP<0) tourP=0;
-    const st0=TOURSEQ[tourP];
-    if(D[cur].id===st0.n){ if(st0.t) speakNode(cur); else { clearTimeout(tourT); tourT=setTimeout(tourAdvance,1200); } }
-    else { tourP--; tourAdvance(); } }
+    tourP=TOURSEQ.findIndex(st=>st.t&&st.n===D[cur].id);
+    stopSpeak(); tourAdvance(); }
 };
 bFull.onclick=()=>{ document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.(); };
 bHelp.onclick=()=>help.classList.add('on');
