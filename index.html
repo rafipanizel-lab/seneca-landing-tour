@@ -253,7 +253,7 @@ body.strip #strip{transform:none}
 /* back links: plain arrow, no ring; next station: bright blinking ring */
 .hot.bk .disc::after{display:none}
 .hot.bk .disc{opacity:.78}
-.hot.nxt .disc::after{border-color:#fff;border-width:3px;animation:wnext .85s ease-in-out infinite;box-shadow:0 0 22px rgba(255,255,255,.55)}
+.hot.nxt .disc::after{border-color:#e05252;border-width:3px;animation:wnext .85s ease-in-out infinite;box-shadow:0 0 24px rgba(224,82,82,.65)}
 @keyframes wnext{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(1.22)}}
 /* the room we are in glows red on the floor plan */
 .pin.act::before{content:'';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:64px;height:64px;border-radius:50%;background:radial-gradient(circle,rgba(180,67,44,.5),rgba(180,67,44,0) 70%);pointer-events:none}
@@ -275,6 +275,7 @@ body.touring .hot{display:none!important}
 .lfrow input{width:100%}
 .lfrow .req{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:#e05252;font-size:16px;pointer-events:none}
 #leadForm .reqnote{font-size:10.5px;color:#e05252;margin:-4px 0 2px}
+body.touring #plan .pin,body.touring #strip,body.touring #big,body.touring .th{pointer-events:none!important}
 </style>
 </head>
 <body>
@@ -726,13 +727,19 @@ function go(i){
   const hereW=WALK[n.id]||0;
   const fwdT=(n.hs||[]).map(x=>WALK[x.to]||0).filter(v=>v>hereW);
   const nextT=fwdT.length?Math.min.apply(null,fwdT):0;
+  const FALLBK=['foyer','fkf','family1','breakfast','mud','guest','pbath','primary','gaming','kitchen'];
+  let pickedFB=false;
   (n.hs||[]).forEach((h,k)=>{
     const e=document.createElement('div');
     // keep markers clear of the floor-plan card (shift right & down)
     let hx=h.x, hy=h.y;
     if(hx<24){ hx=27; hy=Math.max(hy,60); }
     const tgt=WALK[h.to]||0, isFwd=tgt&&tgt>hereW;
-    e.className='hot'+(isFwd?(tgt===nextT?' nxt':''):' bk');
+    const sameRoom=tgt&&tgt===hereW;
+    let showHot=(isFwd&&tgt===nextT)||sameRoom, isNext=isFwd&&tgt===nextT;
+    if(!fwdT.length&&!sameRoom&&!pickedFB&&FALLBK.indexOf(h.to)>=0){ showHot=true; isNext=true; pickedFB=true; }
+    e.className='hot'+(isNext?' nxt':(isFwd?'':' bk'));
+    if(!showHot) e.style.display='none';
     e.style.left=hx+'%'; e.style.top=hy+'%'; e.style.animationDelay=(120+k*90)+'ms';
     const wn=isFwd?tgt:'';
     let hlab=h.label;
@@ -995,15 +1002,16 @@ function playOutro(name, done){
   outro.onerror=()=>{ if(done) done(); };
   const pr=outro.play(); if(pr&&pr.catch) pr.catch(()=>{ if(done) done(); });
 }
+function fullReset(){
+  stopSpeak(); try{outro.pause();}catch(e){}
+  window.__transit=true; if(cur!==0) go(0); window.__transit=false;
+  try{resetView();}catch(e){}
+}
 function finishTour(){
   if(window.__fin) return; window.__fin=true;
-  if(!muted) fadeTo(0.22);
-  setTimeout(()=>{ playOutro('outro1', ()=>{
-    if(typeof LEAD!=='undefined' && LEAD.show){
-      setTimeout(()=>openLead(true), 500);
-      setTimeout(()=>playOutro('outro2', ()=>{ setTimeout(()=>musicOff(), 4500); }), 1100);
-    } else { setTimeout(()=>musicOff(), 4000); }
-  }); }, 2800);
+  const bye=()=>playOutro('outro1', ()=>setTimeout(()=>{ musicOff(); fullReset(); window.__fin=true; }, 800));
+  if(typeof LEAD!=='undefined' && LEAD.show){ openLead(true); playOutro('outro2', bye); }
+  else bye();
 }
 function endTour(){
   clearInterval(timer); timer=null; clearTimeout(tourT); bPlay.classList.remove('on'); document.body.classList.remove('touring');
@@ -1136,7 +1144,9 @@ window.addEventListener('beforeunload', stopSpeak);
 let emptyOn=false;
 const zEmpty=document.getElementById('zEmpty');
 function updEmptyBtn(n){
-  zEmpty.style.display = n.empty ? '' : 'none';
+  zEmpty.style.display='';
+  zEmpty.style.opacity = n.empty ? '' : '.35';
+  zEmpty.style.pointerEvents = n.empty ? '' : 'none';
   zEmpty.classList.toggle('on', emptyOn);
   zEmpty.title = emptyOn ? 'Show it staged' : 'See the room empty';
 }
@@ -1153,7 +1163,7 @@ zEmpty.onclick=()=>{
 };
 
 bPlay.onclick=()=>{
-  if(timer){ clearInterval(timer); timer=null; clearTimeout(tourT); bPlay.classList.remove('on'); document.body.classList.remove('touring'); musicOff(); stopSpeak(); const wk=document.getElementById('walker'); if(wk) wk.classList.remove('on'); }
+  if(timer){ clearInterval(timer); timer=null; clearTimeout(tourT); bPlay.classList.remove('on'); document.body.classList.remove('touring'); musicOff(); stopSpeak(); const wk=document.getElementById('walker'); if(wk) wk.classList.remove('on'); document.getElementById('plan').classList.remove('focus'); fullReset(); }
   else { if(!narrOn){narrOn=true;zMute.classList.add('on');zMute.title='Narration on \u2014 click to turn off';} timer=setInterval(tourAdvance,tourGap()); bPlay.classList.add('on'); document.body.classList.add('touring'); musicOn();
     tourP=TOURSEQ.findIndex(st=>st.t&&st.n===D[cur].id);
     stopSpeak(); tourAdvance(); }
@@ -1230,6 +1240,7 @@ help.onclick=e=>{ if(e.target===help) help.classList.remove('on'); };
 
 addEventListener('keydown',e=>{
   const k=e.key.toLowerCase();
+  if(timer && (k==='arrowright'||k==='arrowleft')) return;   // no manual navigation while the auto tour runs
   if(k==='arrowright') nxt();
   else if(k==='arrowleft') prev();
   else if(k==='m') bPlan.click();
