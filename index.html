@@ -349,8 +349,7 @@ body.intro #bPlay:not(.on){animation:bpRed 1.05s ease-in-out infinite;border-col
     <div id="bigBar">
       <div><h3 id="bigTitle"></h3><div class="sub" id="bigSub"></div></div>
       <div style="margin-left:auto;display:flex;gap:8px">
-        <button class="tb on" id="big2D"><span>2D plan</span></button>
-        <button class="tb" id="big3D"><span>3D model</span></button>
+        <button class="tb" id="bigRot"><span>Rotate &#8635;</span></button>
         <button class="tb" id="bigClose">Close</button>
       </div>
     </div>
@@ -820,13 +819,8 @@ document.getElementById('icRot').onclick=e=>{
 document.getElementById('icBig').onclick=openBig;
 document.getElementById('bigClose').onclick=closeBig;
 
-const b2=document.getElementById('big2D'), b3=document.getElementById('big3D');
-function bigMode(three){
-  document.getElementById('cvBig').style.display = three?'block':'none';
-  document.getElementById('p2dBig').style.display = three?'none':'grid';
-  b3.classList.toggle('on',three); b2.classList.toggle('on',!three);
-}
-b2.onclick=()=>bigMode(false); b3.onclick=()=>{ bigMode(true); if(!bigDH) initBigDH(); };
+document.getElementById('cvBig').style.display='none';
+document.getElementById('bigRot').onclick=()=>document.getElementById('icRot').click();
 
 /* ============================================================
    Photo viewport — drag to look around, wheel/pinch to zoom
