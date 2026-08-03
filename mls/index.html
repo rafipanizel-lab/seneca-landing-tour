@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>3209 Seneca Landing Ln — Virtual Tour</title>
+<style>
+:root{
+  --bg:#0c0d0f; --panel:rgba(18,19,22,.86); --line:rgba(255,255,255,.12);
+  --txt:#f2efe9; --mut:#a6a29a; --accent:#e6c893; --r:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg); color:var(--txt); overflow:hidden;
+  font-family:ui-sans-serif,-apple-system,"Segoe UI",Inter,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;
+}
+#app{position:fixed;inset:0}
+
+/* ---------- header ---------- */
+header{
+  position:relative;z-index:40;display:flex;align-items:center;gap:16px;
+  padding:14px 20px;background:linear-gradient(180deg,rgba(0,0,0,.82),rgba(0,0,0,.35) 60%,rgba(0,0,0,0));
+  pointer-events:none;
+}
+header>*{pointer-events:auto}
+.brand{display:flex;flex-direction:column;line-height:1.15;min-width:0}
+.brand b{
+  font-family:Georgia,"Times New Roman",serif;font-weight:600;font-size:17px;
+  letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  text-shadow:0 1px 14px rgba(0,0,0,.95),0 0 4px rgba(0,0,0,.7)
+}
+.brand small{font-size:10.5px;color:var(--mut);letter-spacing:.13em;text-transform:uppercase;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 12px rgba(0,0,0,.95),0 0 4px rgba(0,0,0,.8)}
+.tools{margin-left:auto;display:flex;gap:8px;flex-wrap:nowrap;justify-content:flex-end}
+button.tb{
+  display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 13px;
+  border:1px solid var(--line);border-radius:999px;background:rgba(20,21,24,.62);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  color:var(--txt);font:inherit;font-size:12.5px;cursor:pointer;transition:.18s ease;white-space:nowrap
+}
+button.tb:hover{background:rgba(40,42,46,.9);border-color:rgba(255,255,255,.26)}
+button.tb.on{background:var(--accent);border-color:var(--accent);color:#1a1509;font-weight:600}
+button.tb svg{width:15px;height:15px;flex:none}
+@media(max-width:760px){ button.tb span{display:none} button.tb{padding:0 10px;height:34px;gap:0} .tools{gap:6px} .brand b{font-size:15px} .brand small{font-size:9px;letter-spacing:.08em} header{padding:12px 14px;gap:8px} }
+
+/* ---------- stage ---------- */
+main{position:absolute;inset:0;z-index:1;overflow:hidden;background:#000;cursor:grab;touch-action:none}
+main.grabbing{cursor:grabbing}
+#view{position:absolute;inset:0;transform-origin:50% 50%;will-change:transform;
+      transition:transform .22s cubic-bezier(.22,.61,.36,1)}
+#view.live{transition:none}
+#view.live .layer.kb{animation:none}
+#zoomUI{position:absolute;right:18px;bottom:24px;z-index:24;display:flex;flex-direction:column;gap:7px;align-items:center;transition:bottom .3s ease}
+body.strip #zoomUI{bottom:126px}
+.zb{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;cursor:pointer;
+    background:rgba(12,13,15,.55);border:1px solid var(--line);color:#fff;
+    backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:.16s}
+.zb:hover{background:rgba(230,200,147,.92);color:#1a1509;border-color:transparent}
+.zb.on{background:rgba(230,200,147,.92);color:#1a1509;border-color:transparent}
+.zb svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+#zLvl{font-size:10.5px;color:var(--mut);letter-spacing:.06em;text-shadow:0 1px 8px #000}
+@media(max-width:760px){#zoomUI{right:10px;bottom:16px}body.strip #zoomUI{bottom:112px}.zb{width:32px;height:32px}}
+.layer{position:absolute;inset:0;-webkit-user-drag:none;pointer-events:none;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .62s ease;will-change:opacity,transform}
+.layer.show{opacity:1}
+.layer.kb{animation:kb 26s ease-in-out infinite alternate}
+#clip{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;
+      transition:opacity .45s ease;pointer-events:none;z-index:3}
+#clip.on{opacity:1}
+#scrub{position:absolute;left:50%;transform:translateX(-50%);z-index:23;width:min(420px,52vw);height:3px;
+  border-radius:3px;background:rgba(255,255,255,.22);display:none;bottom:34px;transition:bottom .3s ease}
+#scrub.show{display:block}
+#scrub i{display:block;height:100%;width:0;border-radius:3px;background:var(--accent)}
+body.strip #scrub{bottom:136px}
+#scrubHint{position:absolute;left:50%;transform:translateX(-50%);z-index:23;bottom:44px;font-size:11px;
+  color:rgba(255,255,255,.7);text-shadow:0 1px 8px #000;display:none;letter-spacing:.04em}
+#scrubHint.show{display:block}
+body.strip #scrubHint{bottom:146px}
+#motion{position:absolute;left:24px;z-index:23;display:none;align-items:center;gap:8px;height:38px;padding:0 16px 0 13px;
+   border:1px solid var(--line);border-radius:999px;background:rgba(12,13,15,.6);color:#fff;cursor:pointer;
+   backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);font:inherit;font-size:12.5px;transition:.18s;
+   bottom:24px;transform:translateY(0)}
+#motion.show{display:inline-flex}
+#motion:hover{background:var(--accent);color:#1a1509;border-color:transparent}
+#motion svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+body.strip #motion{bottom:126px}
+@media(max-width:760px){#motion{left:16px;bottom:16px}body.strip #motion{bottom:112px}}
+@keyframes kb{from{transform:scale(1.02)}to{transform:scale(1.09)}}
+main::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(120% 90% at 50% 45%,rgba(0,0,0,0) 45%,rgba(0,0,0,.45) 100%)}
+
+/* ---------- hotspots ---------- */
+#hots{position:absolute;inset:0;z-index:12}
+.hot{position:absolute;transform:translate(-50%,-50%);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;animation:pop .5s ease both}
+@keyframes pop{from{opacity:0;transform:translate(-50%,-40%) scale(.8)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+.disc{position:relative;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.16);border:1.5px solid rgba(255,255,255,.85);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:grid;place-items:center;box-shadow:0 6px 22px rgba(0,0,0,.45);transition:.2s ease}
+.disc::before{content:"";position:absolute;inset:-8px;border-radius:50%;border:1.5px solid rgba(255,255,255,.5);animation:ring 2.6s ease-out infinite}
+@keyframes ring{0%{transform:scale(.75);opacity:.85}70%{transform:scale(1.35);opacity:0}100%{opacity:0}}
+.disc svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
+.hot:hover .disc{background:var(--accent);border-color:var(--accent);transform:scale(1.12)}
+.hot:hover .disc svg{stroke:#1a1509}
+.hot .lab{font-size:11.5px;padding:4px 10px;border-radius:999px;background:rgba(10,11,13,.8);border:1px solid var(--line);white-space:nowrap;opacity:0;transform:translateY(-4px);transition:.2s ease}
+.hot:hover .lab{opacity:1;transform:translateY(0)}
+@media(hover:none){ .hot .lab{opacity:1;transform:none} .disc{width:40px;height:40px} }
+
+/* ---------- caption ---------- */
+#cap{position:absolute;left:24px;bottom:24px;z-index:20;max-width:min(430px,72vw);transition:bottom .3s ease}
+#cap .idx{font-size:11px;letter-spacing:.22em;color:var(--accent);text-transform:uppercase;text-shadow:0 1px 10px rgba(0,0,0,.95)}
+#cap h1{font-family:Georgia,"Times New Roman",serif;font-weight:600;font-size:clamp(22px,3.4vw,34px);line-height:1.15;margin:7px 0 5px;text-shadow:0 2px 20px rgba(0,0,0,.85)}
+#cap p{font-size:13px;color:#ddd8cf;text-shadow:0 1px 12px rgba(0,0,0,.95)}
+body.strip #cap{bottom:126px}
+@media(max-width:760px){#cap{left:16px;bottom:16px} body.strip #cap{bottom:112px}}
+
+/* ---------- arrows ---------- */
+.arw{position:absolute;top:50%;transform:translateY(-50%);z-index:22;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;cursor:pointer;background:rgba(12,13,15,.5);border:1px solid var(--line);color:#fff;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:.18s ease}
+.arw:hover{background:rgba(230,200,147,.92);color:#1a1509;border-color:transparent}
+.arw.l{left:18px}.arw.r{right:18px}
+.arw svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+@media(max-width:760px){.arw{width:40px;height:40px}.arw.l{left:8px}.arw.r{right:8px}}
+
+/* ---------- dollhouse panel ---------- */
+#plan{
+  position:absolute;left:24px;top:84px;z-index:30;width:296px;
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  box-shadow:0 18px 50px rgba(0,0,0,.55);overflow:hidden;transition:.28s cubic-bezier(.4,0,.2,1)
+}
+#plan.hide{opacity:0;transform:translateX(-14px) scale(.97);pointer-events:none}
+.ph{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.ph b{font-size:10.5px;letter-spacing:.17em;text-transform:uppercase;color:var(--mut);font-weight:600}
+.ph .sp{margin-left:auto;display:flex;gap:6px}
+.ic{width:26px;height:26px;border-radius:7px;border:1px solid var(--line);background:rgba(255,255,255,.05);display:grid;place-items:center;cursor:pointer;color:var(--mut);transition:.16s}
+.ic:hover{color:var(--txt);background:rgba(255,255,255,.12)}
+.ic.on{background:var(--accent);color:#1a1509;border-color:var(--accent)}
+.ic svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+canvas.dh{display:block;width:100%;cursor:grab;touch-action:none}
+.p2d{position:relative;display:block;width:100%;background:#f7f5f1;overflow:hidden}
+.p2d img{display:block;width:100%;height:auto;-webkit-user-drag:none}
+.p2d .pin{position:absolute;transform:translate(-50%,-50%);cursor:pointer;z-index:3}
+.p2d .pin i{display:block;width:15px;height:15px;border-radius:50%;background:var(--accent);
+  border:2px solid #1a1509;box-shadow:0 2px 6px rgba(0,0,0,.4);transition:.16s}
+.p2d .pin::after{content:"";position:absolute;inset:-7px;border-radius:50%;border:1.5px solid rgba(201,168,106,.85);
+  animation:ring 2.8s ease-out infinite}
+.p2d .pin:hover i{transform:scale(1.45);background:#fff}
+.p2d .pin.act i{background:#b4432c;transform:scale(1.35)}
+.p2d .pin.act::after{border-color:rgba(180,67,44,.9)}
+.p2d .pin b{position:absolute;left:50%;top:-9px;transform:translate(-50%,-100%);white-space:nowrap;
+  font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;background:#1a1509;color:#f7efdd;
+  opacity:0;pointer-events:none;transition:.16s}
+.p2d .pin:hover b{opacity:1}
+.p2d svg.park{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
+#p2dBig{position:absolute;inset:0;display:grid;place-items:center;padding:70px 20px 96px}
+#p2dBig .p2d{width:auto;max-width:100%;max-height:100%;background:transparent}
+#p2dBig .p2d img{width:auto;max-width:100%;max-height:calc(100vh - 170px)}
+#p2dBig .p2d .pin i{width:19px;height:19px}
+#p2dBig .p2d .pin b{font-size:12px}
+canvas.dh:active{cursor:grabbing}
+.pf{padding:7px 12px 10px;font-size:10.5px;color:var(--mut);border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:8px}
+.pf b{color:var(--accent);font-weight:600}
+@media(max-width:900px){#plan{width:252px;top:76px;left:14px}}
+
+/* ---------- dollhouse fullscreen ---------- */
+#big{position:absolute;inset:0;z-index:55;display:none;background:radial-gradient(120% 100% at 50% 20%,#181a1e,#0a0b0d 70%)}
+#big.on{display:block}
+#big canvas{position:absolute;inset:0;width:100%;height:100%}
+#bigBar{position:absolute;left:0;right:0;top:0;z-index:2;display:flex;align-items:center;gap:14px;padding:16px 20px;background:linear-gradient(180deg,rgba(0,0,0,.7),transparent);pointer-events:none}
+#bigBar>*{pointer-events:auto}
+#bigBar h3{font-family:Georgia,serif;font-size:16px;font-weight:600}
+#bigBar .sub{font-size:11.5px;color:var(--mut)}
+#bigLegend{position:absolute;left:20px;bottom:20px;z-index:2;font-size:11.5px;color:var(--mut);display:flex;flex-direction:column;gap:6px}
+#bigLegend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:7px;vertical-align:-1px}
+#bigTip{position:absolute;z-index:3;pointer-events:none;padding:7px 11px;border-radius:9px;background:rgba(10,11,13,.9);border:1px solid var(--line);font-size:12px;opacity:0;transition:opacity .15s;white-space:nowrap}
+#bigTip b{display:block;font-size:13px;margin-bottom:2px}
+#bigTip s{display:block;text-decoration:none;color:var(--accent);font-size:11px}
+
+/* ---------- thumb strip ---------- */
+#strip{position:absolute;left:0;right:0;bottom:0;z-index:35;padding:12px 16px 14px;display:flex;gap:9px;overflow-x:auto;background:linear-gradient(0deg,rgba(0,0,0,.85),rgba(0,0,0,0));transform:translateY(105%);transition:.32s cubic-bezier(.4,0,.2,1)}
+body.strip #strip{transform:none}
+#strip::-webkit-scrollbar{height:6px}
+#strip::-webkit-scrollbar-thumb{background:rgba(255,255,255,.22);border-radius:9px}
+.th{flex:none;width:130px;aspect-ratio:3/2;border-radius:9px;overflow:hidden;cursor:pointer;border:2px solid transparent;position:relative;transition:.18s ease;opacity:.62}
+.th img{width:100%;height:100%;object-fit:cover;display:block}
+.th:hover{opacity:1;transform:translateY(-3px)}
+.th.act{border-color:var(--accent);opacity:1}
+.th span{position:absolute;left:0;right:0;bottom:0;padding:14px 7px 5px;font-size:10px;background:linear-gradient(0deg,rgba(0,0,0,.9),transparent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:760px){.th{width:104px}}
+
+/* ---------- lead capture ---------- */
+#lead{position:absolute;inset:0;z-index:62;display:none;place-items:center;background:rgba(6,7,8,.76);
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);padding:20px}
+#lead.on{display:grid}
+#lead .card{position:relative;max-width:410px;width:100%;background:#141518;border:1px solid var(--line);
+  border-radius:var(--r);padding:26px 26px 22px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+#lead .x{position:absolute;right:14px;top:12px;width:30px;height:30px;border:0;border-radius:8px;cursor:pointer;
+  background:transparent;color:var(--mut);font-size:22px;line-height:1}
+#lead .x:hover{color:var(--txt);background:rgba(255,255,255,.07)}
+#lead h2{font-family:Georgia,serif;font-size:20px;font-weight:600;margin-bottom:7px}
+#lead p{font-size:13px;color:var(--mut);line-height:1.55;margin-bottom:16px}
+#lead input[type=text],#lead input[type=tel],#lead input[type=email],#lead textarea{
+  width:100%;margin-bottom:9px;padding:11px 13px;border-radius:10px;border:1px solid var(--line);
+  background:rgba(255,255,255,.05);color:var(--txt);font:inherit;font-size:13.5px;resize:vertical}
+#lead input:focus,#lead textarea:focus{outline:none;border-color:var(--accent);background:rgba(255,255,255,.08)}
+#lead input::placeholder,#lead textarea::placeholder{color:#75787e}
+#lead .ok{display:flex;gap:8px;align-items:flex-start;font-size:11.5px;color:var(--mut);margin:4px 0 14px;line-height:1.45}
+#lead .ok input{margin-top:1px;accent-color:var(--accent)}
+#lead #lfSend{width:100%;height:42px;border:0;border-radius:10px;cursor:pointer;background:var(--accent);
+  color:#1a1509;font:inherit;font-weight:600;font-size:14px;transition:.16s}
+#lead #lfSend:hover{filter:brightness(1.06)}
+#lead #lfSend[disabled]{opacity:.6;cursor:default}
+#lead .alt{display:flex;gap:9px;margin-top:13px}
+#lead .alt a{flex:1;text-align:center;padding:9px 8px;border-radius:9px;border:1px solid var(--line);
+  color:var(--txt);text-decoration:none;font-size:12.5px;transition:.16s}
+#lead .alt a:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.28)}
+#lead .err{color:#e2a08f;font-size:12px;margin-top:9px}
+#leadDone{text-align:center;padding:14px 0 6px}
+#leadDone .tick{width:52px;height:52px;margin:0 auto 14px;border-radius:50%;display:grid;place-items:center;
+  background:rgba(230,200,147,.16);color:var(--accent);font-size:26px}
+#leadDone b{display:block;font-family:Georgia,serif;font-size:17px;margin-bottom:6px}
+#leadDone span{color:var(--mut);font-size:13px}
+
+/* ---------- help ---------- */
+#help{position:absolute;inset:0;z-index:60;display:none;place-items:center;background:rgba(6,7,8,.74);backdrop-filter:blur(6px);padding:20px}
+#help.on{display:grid}
+#help .card{max-width:450px;width:100%;background:#141518;border:1px solid var(--line);border-radius:var(--r);padding:26px 26px 22px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+#help h2{font-family:Georgia,serif;font-size:20px;margin-bottom:14px;font-weight:600}
+#help ul{list-style:none;display:grid;gap:10px;font-size:13.5px;color:#ddd8cf}
+#help li{display:flex;gap:11px;align-items:flex-start}
+#help kbd{flex:none;min-width:66px;text-align:center;font:inherit;font-size:11px;padding:3px 7px;border:1px solid var(--line);border-radius:6px;background:rgba(255,255,255,.06);color:var(--accent)}
+#help button{margin-top:20px;width:100%;height:40px;border-radius:10px;border:none;cursor:pointer;background:var(--accent);color:#1a1509;font:inherit;font-weight:600;font-size:13.5px}
+#note{margin-top:14px;font-size:11.5px;color:var(--mut);line-height:1.55}
+</style>
+</head>
+<body class="strip">
+<div id="app">
+
+  <main>
+    <div id="view">
+      <img class="layer" id="lyA" alt="">
+      <img class="layer" id="lyB" alt="">
+      <video id="clip" playsinline muted preload="metadata"></video>
+      <div id="hots"></div>
+    </div>
+    <button id="motion"><svg viewBox="0 0 24 24"><path d="M7 4l12 8-12 8z"/></svg><span id="motionTxt">Play motion</span></button>
+    <div id="scrub"><i></i></div><div id="scrubHint">drag left / right to walk</div>
+    <div id="zoomUI">
+      <div class="zb" id="zIn" title="Zoom in (+)"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M11 8v6M8 11h6M16.5 16.5L21 21"/></svg></div>
+      <div class="zb" id="zOut" title="Zoom out (−)"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M8 11h6M16.5 16.5L21 21"/></svg></div>
+      <div class="zb" id="zEmpty" title="See the room empty / staged" style="display:none">
+        <svg viewBox="0 0 24 24"><path d="M4 18v-6M20 18v-6M4 12h16M6 12V8a2 2 0 012-2h8a2 2 0 012 2v4" opacity=".9"/><path d="M3 21L21 3" id="zEmptyStrike" style="display:none"/></svg>
+      </div>
+      <div class="zb" id="zMute" title="Narrate this room"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 8.5a5 5 0 010 7M20 6a9 9 0 010 12"/></svg></div>
+      <div class="zb" id="zMus" title="Background music on / off"><svg viewBox="0 0 24 24"><path d="M9 18V5l10-2v13"/><circle cx="6.5" cy="18" r="2.6"/><circle cx="16.5" cy="16" r="2.6"/></svg></div>
+      <div class="zb" id="zRst" title="Reset view (0)"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 2.6-6.4"/><path d="M3 4v5h5"/></svg></div>
+      <div id="zLvl">1.0&times;</div>
+    </div>
+    <div class="arw l" id="prev" title="Previous (←)"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></div>
+    <div class="arw r" id="next" title="Next (→)"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></div>
+    <div id="cap">
+      <div class="idx" id="capIdx"></div>
+      <h1 id="capTitle"></h1>
+      <p id="capSub"></p>
+    </div>
+  </main>
+
+  <header>
+    <div class="brand"><b id="propName"></b><small id="propAddr"></small><small id="propAgent" style="color:var(--accent);letter-spacing:.06em;text-transform:none;margin-top:5px"></small></div>
+    <div class="tools">
+      <button class="tb on" id="bPlan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M12 12l9-5M12 12v10M12 12L3 7"/></svg><span>Floor plan</span></button>
+      <button class="tb on" id="bStrip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5h4v14H3zM10 5h4v14h-4zM17 5h4v14h-4z"/></svg><span>Photos</span></button>
+      <button class="tb" id="bPlay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 4l12 8-12 8z"/></svg><span>Auto tour</span></button>
+      <button class="tb" id="bFull"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span>Fullscreen</span></button>
+      <button class="tb" id="bLead" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18v12H3z"/><path d="M3 7l9 6 9-6"/></svg><span>Contact</span></button>
+      <button class="tb" id="bHelp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 113.5 2.3c-.7.4-1 .9-1 1.7M12 17h.01"/></svg><span>Help</span></button>
+    </div>
+  </header>
+
+  <aside id="plan">
+    <div class="ph">
+      <b>Floor Plan</b>
+      <div class="sp">
+        <div class="ic on" id="ic2D" title="2D floor plan"><svg viewBox="0 0 24 24"><path d="M3 4h18v16H3z"/><path d="M3 11h9M12 11v9"/></svg></div>
+        <div class="ic" id="ic3D" title="3D model"><svg viewBox="0 0 24 24"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M12 12l9-5M12 12v10M12 12L3 7"/></svg></div>
+        <div class="ic" id="icSpin" title="Auto-rotate"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 11-3-6.7"/><path d="M21 4v5h-5"/></svg></div>
+        <div class="ic" id="icBig" title="Expand"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></div>
+      </div>
+    </div>
+    <div id="p2d"></div>
+    <canvas class="dh" id="cvSmall" style="display:none"></canvas>
+    <div class="pf"><span id="pfRoom">Drag to rotate · click a room</span><span><b>3,314</b> sqft</span></div>
+  </aside>
+
+  <div id="big">
+    <div id="p2dBig"></div>
+    <canvas id="cvBig" style="display:none"></canvas>
+    <div id="bigBar">
+      <div><h3 id="bigTitle"></h3><div class="sub" id="bigSub"></div></div>
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <button class="tb on" id="big2D"><span>2D plan</span></button>
+        <button class="tb" id="big3D"><span>3D model</span></button>
+        <button class="tb" id="bigClose">Close</button>
+      </div>
+    </div>
+    <div id="bigLegend">
+      <div><i style="background:#e6c893"></i>Click any marker to open that room</div>
+      <div><i style="background:#5b5f66"></i>No photo in this set</div>
+      <div style="opacity:.7;max-width:340px;line-height:1.5">Surveyed floor plan for this model (3209 Iris Trail Ln, MLS 52965144). Parking bays are an illustration — the garage was outside the scan.</div>
+    </div>
+    <div id="bigTip"></div>
+  </div>
+
+  <div id="strip"></div>
+
+  <div id="lead">
+    <div class="card">
+      <button class="x" id="leadX" aria-label="Close">&times;</button>
+      <h2 id="leadTitle"></h2>
+      <p id="leadBlurb"></p>
+      <form id="leadForm" novalidate>
+        <input name="name"  id="lfName"  type="text"  placeholder="Your name" autocomplete="name" required>
+        <input name="phone" id="lfPhone" type="tel"   placeholder="Phone" autocomplete="tel">
+        <input name="email" id="lfEmail" type="email" placeholder="Email" autocomplete="email">
+        <textarea name="message" id="lfMsg" rows="3" placeholder="When would you like to see it?"></textarea>
+        <label class="ok"><input type="checkbox" id="lfOk" checked> I agree to be contacted about this property.</label>
+        <button type="submit" id="lfSend">Send</button>
+        <div class="alt" id="leadAlt"></div>
+      </form>
+      <div id="leadDone" style="display:none">
+        <div class="tick">&#10003;</div>
+        <b>Thank you — your details are on the way.</b>
+        <span>We&rsquo;ll be in touch shortly.</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="help">
+    <div class="card">
+      <h2>How to move around</h2>
+      <ul>
+        <li><kbd>Click</kbd> Tap the glowing circles in a photo to walk into the next space.</li>
+        <li><kbd>Drag</kbd> Look around inside a photo. Scroll or pinch to zoom, double-click to zoom in.</li>
+        <li><kbd>+ &minus; 0</kbd> Zoom in, out, reset.</li>
+        <li><kbd>Play motion</kbd> Rooms with a camera-move clip show this button — tap it for a short cinematic pass.</li>
+        <li><kbd>Drag</kbd> On the 3D plan: spin it. Click any lit room to jump to its photos.</li>
+        <li><kbd>← →</kbd> Step through every room in order.</li>
+        <li><kbd>M</kbd> Show or hide the 3D plan. <kbd>T</kbd> photo strip.</li>
+        <li><kbd>Space</kbd> Auto tour — plays with music. The speaker button mutes it.</li>
+        <li><kbd>F</kbd> Fullscreen.</li>
+      </ul>
+      <div id="note">Room layout from the surveyed plan for this model (3209 Iris Trail Ln, MLS 52965144). Living area 3,314 sqft and the 3-car attached garage are per the appraisal by BTR Consulting. The garage is approximate because it sat outside the scan. Dark rooms have no photo in this set.</div>
+      <button id="bClose">Start the tour</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ====== EDIT ME ====== */
+const AGENT = {
+  show: false,                       // set to false for the unbranded MLS link
+  name:  "Lauren Klemann-Cohen",
+  firm:  "Keller Williams Preferred",
+  phone: "713-819-3069"
+};
+/* ---- lead capture. Fill in ONE of `email` or `endpoint`; both blank falls back to a mail draft ---- */
+const LEAD = {
+  show:     false,
+  email:    "",                       // e.g. "lauren@kw.com"  -> posts via formsubmit.co
+  endpoint: "",                       // or a full Formspree/Getform URL, e.g. "https://formspree.io/f/xxxx"
+  phone:    "713-819-3069",
+  whatsapp: "",                       // digits only, e.g. "17138193069"
+  title:    "Request a showing",
+  blurb:    "Leave your details and we\u2019ll get back to you about 3209 Seneca Landing Ln.",
+
+  /* ---- optional lead gate ----------------------------------------------
+     mode: "off"   every room open to everyone            (use this for the MLS link)
+           "after" free browsing, then ask once           (recommended for ads/social)
+           "plan"  the floor-plan markers ask first
+     free:  how many rooms are free before "after" kicks in
+     skip:  true lets a visitor dismiss the gate and carry on               */
+  gate: { mode: "after", free: 6, skip: true,
+          title: "See the rest of the home",
+          blurb: "Leave your details and the full walkthrough, the 3D model and the floor plan open up \u2014 we\u2019ll also send you the plan by email." }
+};
+const PROPERTY = {
+  name: "3209 Seneca Landing Ln",
+  line:  "Pearland, TX 77584 \u00b7 3,314 sqft \u00b7 4 bed \u00b7 3 bath \u00b7 3-car garage \u00b7 built 2015"
+};
+/* ===================== */
+
+const D = [{"id": "twilight", "title": "Front Elevation \u00b7 Twilight", "sub": "3,314 sqft &middot; 4 bed &middot; 3 bath &middot; 3-car garage", "px": 50, "py": 96, "hs": [{"x": 38, "y": 66, "to": "foyer", "label": "Enter the home", "dir": "fwd"}, {"x": 50, "y": 84, "to": "front", "label": "See it in daylight", "dir": "back"}], "say": "Welcome to 3209 Seneca Landing Lane in Pearland. Built in 2015, a single story home of three thousand three hundred fourteen square feet, with four bedrooms, three baths, and a three car attached garage.", "empty": null, "room": null, "clip": null, "src": "../img/1785725991077_image.jpg", "thumb": "../img/t_1785725991077_image.jpg"}, {"id": "front", "title": "Front Elevation", "sub": "Built 2015 &middot; 1 story &middot; 3-car attached garage", "px": 50, "py": 96, "hs": [{"x": 37, "y": 62, "to": "foyer", "label": "Enter the home", "dir": "fwd"}, {"x": 84, "y": 20, "to": "aerial", "label": "Aerial view", "dir": "up"}], "say": "Built in 2015. A single story home of three thousand three hundred fourteen square feet, with a three car attached garage.", "empty": null, "room": null, "clip": null, "src": "../img/2_STAGING__ENTERANCE_OUTSIDE_2.jpg", "thumb": "../img/t_2_STAGING__ENTERANCE_OUTSIDE_2.jpg"}, {"id": "aerial", "title": "Aerial View", "sub": "3,314 sqft &middot; 7,789 sqft lot &middot; Southlake Sec 2, Blk 3 Lot 10", "px": 12, "py": 96, "hs": [{"x": 52, "y": 78, "to": "front", "label": "Front entry", "dir": "fwd"}], "say": "Welcome to 3209 Seneca Landing Lane in Pearland. Located in a beautifully planned community with scenic lakes, walking trails, and green spaces, with a peaceful suburban setting and easy access to shopping, dining, and major commuter routes.", "empty": null, "room": null, "clip": null, "src": "../img/1_STAGING__ENTERANCE_OUTSIDE_1.jpg", "thumb": "../img/t_1_STAGING__ENTERANCE_OUTSIDE_1.jpg"}, {"id": "foyer", "title": "Foyer", "sub": "Entry 6&prime;0&Prime; &times; 13&prime;3&Prime; &middot; coffered ceiling", "px": 49, "py": 70, "hs": [{"x": 50, "y": 40, "to": "dining1", "label": "Dining room &amp; office", "dir": "fwd"}, {"x": 90, "y": 52, "to": "bed_f", "label": "Bedrooms", "dir": "right"}, {"x": 10, "y": 56, "to": "mud", "label": "Mud room", "dir": "left"}, {"x": 50, "y": 84, "to": "fkf", "label": "Down the hall", "dir": "back"}], "say": "Step into a grand and welcoming foyer featuring soaring ceilings.", "empty": "../img/FOYER_1_small.jpg", "room": "entry", "clip": null, "src": "../img/3_staged__foyer.jpg", "thumb": "../img/t_3_staged__foyer.jpg"}, {"id": "dining1", "title": "Formal Dining", "sub": "Dining 9&prime;7&Prime; &times; 16&prime;0&Prime; &middot; formal", "px": 26, "py": 62, "hs": [{"x": 90, "y": 54, "to": "dining2", "label": "Another angle", "dir": "right"}, {"x": 50, "y": 84, "to": "foyer", "label": "Back to the entry", "dir": "back"}], "say": "The formal dining room, nine feet seven by sixteen feet, sits just off the entry, with a wall of windows to the front garden.", "empty": "../img/DINING_ROOM_1_small.jpg", "room": "dining", "clip": null, "src": "../img/4_staged_dining_room1.jpg", "thumb": "../img/t_4_staged_dining_room1.jpg"}, {"id": "dining2", "title": "Formal Dining \u00b7 Toward Entry", "sub": "Dining 9&prime;7&Prime; &times; 16&prime;0&Prime; &middot; open to the entry", "px": 33, "py": 69, "hs": [{"x": 52, "y": 52, "to": "foyer", "label": "Front entry", "dir": "fwd"}, {"x": 88, "y": 52, "to": "office", "label": "Study &middot; French doors", "dir": "right"}, {"x": 50, "y": 84, "to": "dining1", "label": "Another angle", "dir": "back"}], "say": "The formal dining room opens directly to the grand foyer, with the private study just across the entry.", "empty": "../img/DINING_ROOM_1_small.jpg", "room": "dining", "clip": null, "src": "../img/5_staged__dining_room2.jpg", "thumb": "../img/t_5_staged__dining_room2.jpg"}, {"id": "office", "title": "Home Office / Study", "sub": "Office 12&prime;9&Prime; &times; 10&prime;6&Prime; &middot; French doors", "px": 28, "py": 86, "hs": [{"x": 90, "y": 55, "to": "foyer", "label": "Back to the entry", "dir": "right"}], "say": "The private home office with French doors adds both style and functionality.", "empty": null, "room": "office", "clip": null, "src": "../img/6_staged_office_space.jpg", "thumb": "../img/t_6_staged_office_space.jpg"}, {"id": "family1", "title": "Family Room", "sub": "Living 24&prime;6&Prime; &times; 21&prime;3&Prime; &middot; vaulted ceiling", "px": 38, "py": 24, "hs": [{"x": 33, "y": 38, "to": "yard", "label": "Back yard", "dir": "fwd"}, {"x": 90, "y": 58, "to": "kbf", "label": "Kitchen &amp; breakfast", "dir": "right"}, {"x": 11, "y": 56, "to": "family2", "label": "Another angle", "dir": "left"}, {"x": 50, "y": 84, "to": "primary", "label": "Primary suite", "dir": "back"}], "say": "The family room features soaring vaulted ceilings and a wall of windows with arched transoms that fill the space with natural light.", "empty": null, "room": "great", "clip": [{"type": "video/mp4; codecs=\"avc1.42E01E\"", "src": "../clip/clip_family_scrub.mp4"}, {"type": "video/webm; codecs=\"vp9\"", "src": "../clip/clip_family_scrub.webm"}], "src": "../img/7_staged_family_room.jpg", "thumb": "../img/t_7_staged_family_room.jpg"}, {"id": "family2", "title": "Family Room \u00b7 Rear Wall", "sub": "Living 24&prime;6&Prime; &times; 21&prime;3&Prime; &middot; window wall to the yard", "px": 29, "py": 34, "hs": [{"x": 63, "y": 48, "to": "yard", "label": "Back yard \u00b7 covered patio", "dir": "fwd"}, {"x": 90, "y": 55, "to": "fkf", "label": "Toward the kitchen", "dir": "right"}, {"x": 10, "y": 55, "to": "primary", "label": "Primary suite", "dir": "left"}, {"x": 50, "y": 84, "to": "family1", "label": "Another angle", "dir": "back"}], "say": "A spacious open concept layout seamlessly connects the family room, kitchen, and breakfast area.", "empty": null, "room": "great", "clip": null, "src": "../img/8_staged_family_room.jpg", "thumb": "../img/t_8_staged_family_room.jpg"}, {"id": "yard", "title": "Back Yard", "sub": "Covered patio &middot; private fenced yard", "px": 0, "py": 0, "hs": [{"x": 44, "y": 60, "to": "family2", "label": "Back inside", "dir": "fwd"}, {"x": 88, "y": 18, "to": "aerial", "label": "Aerial view", "dir": "up"}], "say": "Enjoy a private backyard with covered patio, perfect for relaxing or entertaining.", "empty": "../img/1785724726873_image.jpg", "room": null, "clip": null, "src": "../img/1785724703151_image.jpg", "thumb": "../img/t_1785724703151_image.jpg"}, {"id": "fkf", "title": "Family Room \u00b7 Open Sight Line", "sub": "Living 24&prime;6&Prime; &times; 21&prime;3&Prime; &middot; open to kitchen &amp; entry", "px": 47, "py": 36, "hs": [{"x": 48, "y": 52, "to": "kbf", "label": "Kitchen", "dir": "fwd"}, {"x": 88, "y": 48, "to": "foyer", "label": "Entry", "dir": "right"}, {"x": 8, "y": 55, "to": "primary", "label": "Primary suite", "dir": "left"}, {"x": 50, "y": 84, "to": "family1", "label": "Back to the living room", "dir": "back"}], "say": "A spacious open concept layout seamlessly connects the family room, kitchen, and breakfast area, all under soaring vaulted ceilings.", "empty": "../img/FOYER_2_small.jpg", "room": "great", "clip": null, "src": "../img/9_stayed_family_roomkitchenfoyer.jpg", "thumb": "../img/t_9_stayed_family_roomkitchenfoyer.jpg"}, {"id": "kbf", "title": "Kitchen Bar", "sub": "Kitchen bar &middot; open kitchen-dining, 35&prime;11&Prime; &times; 33&prime;2&Prime;", "px": 62, "py": 45, "hs": [{"x": 50, "y": 46, "to": "kitchen", "label": "Into the kitchen", "dir": "fwd"}, {"x": 90, "y": 50, "to": "foyer", "label": "Back to the entry", "dir": "right"}, {"x": 10, "y": 52, "to": "breakfast", "label": "Breakfast area", "dir": "left"}, {"x": 50, "y": 84, "to": "family1", "label": "Back to the living room", "dir": "back"}], "say": "The large island offers breakfast bar seating on two sides, open to the family room and the breakfast area.", "empty": "../img/FAMILY_ROOM_1_small.jpg", "room": "kitchen", "clip": null, "src": "../img/10_staged_kitchenfoyerbreakfast_area.jpg", "thumb": "../img/t_10_staged_kitchenfoyerbreakfast_area.jpg"}, {"id": "kitchen", "title": "Kitchen", "sub": "Kitchen &middot; island, granite, walk-in pantry", "px": 70, "py": 39, "hs": [{"x": 88, "y": 45, "to": "butler", "label": "Butler&rsquo;s pantry", "dir": "right"}, {"x": 10, "y": 50, "to": "breakfast", "label": "Breakfast area", "dir": "left"}, {"x": 50, "y": 84, "to": "kbf", "label": "Back to the bar", "dir": "back"}], "say": "The kitchen boasts granite countertops, rich cabinetry, stainless steel appliances, a gas range, and a large island with breakfast bar seating.", "empty": "../img/KITCHEN_1_small.jpg", "room": "kitchen", "clip": null, "src": "../img/11_staged_kitchen.jpg", "thumb": "../img/t_11_staged_kitchen.jpg"}, {"id": "butler", "title": "Butler's Pantry", "sub": "Butler&rsquo;s hall 9&prime;1&Prime; &times; 5&prime;9&Prime; &middot; prep counter", "px": 89, "py": 44, "hs": [{"x": 88, "y": 50, "to": "kitchen", "label": "Kitchen", "dir": "right"}, {"x": 60, "y": 52, "to": "mud", "label": "Mud room", "dir": "fwd"}], "say": "A butler pantry with granite counters connects the kitchen to the entry hall.", "empty": null, "room": "butler", "clip": null, "src": "../img/12_staged_butlers_counter_1.jpg", "thumb": "../img/t_12_staged_butlers_counter_1.jpg"}, {"id": "mud", "title": "Mud Room", "sub": "Mud room &middot; built-in bench off the garage", "px": 89, "py": 60, "hs": [{"x": 88, "y": 48, "to": "utility", "label": "Utility room", "dir": "right"}, {"x": 50, "y": 84, "to": "butler", "label": "Butler&rsquo;s pantry", "dir": "back"}], "say": "A mud room with a built in bench sits off the garage entry.", "empty": null, "room": "mud", "clip": null, "src": "../img/13_stage_mud_room.jpg", "thumb": "../img/t_13_stage_mud_room.jpg"}, {"id": "utility", "title": "Utility Room", "sub": "Laundry 10&prime;3&Prime; &times; 6&prime;0&Prime; &middot; full-size washer &amp; dryer", "px": 89, "py": 75, "hs": [{"x": 50, "y": 84, "to": "mud", "label": "Back to the mud room", "dir": "back"}], "say": "The utility room takes a full size washer and dryer, with shelving and a window.", "empty": "../img/BEDROOM_2_small.jpg", "room": "laundry", "clip": null, "src": "../img/15_utility_room_utility_room.jpg", "thumb": "../img/t_15_utility_room_utility_room.jpg"}, {"id": "breakfast", "title": "Breakfast Area", "sub": "Breakfast nook &middot; arched windows off the kitchen", "px": 70, "py": 18, "hs": [{"x": 10, "y": 52, "to": "gaming", "label": "Game room", "dir": "left"}, {"x": 90, "y": 52, "to": "kitchen", "label": "Kitchen", "dir": "right"}, {"x": 50, "y": 84, "to": "kbf", "label": "Kitchen bar", "dir": "back"}], "say": "The breakfast area sits in a bay of arched windows, part of the open concept layout that connects it to the kitchen and family room.", "empty": "../img/BEDROOM_1_small.jpg", "room": "break", "clip": null, "src": "../img/14_staged_breakfast_area.jpg", "thumb": "../img/t_14_staged_breakfast_area.jpg"}, {"id": "gaming", "title": "Game Room / Flex", "sub": "Game / media room 16&prime;8&Prime; &times; 13&prime;8&Prime;", "px": 88, "py": 18, "hs": [{"x": 88, "y": 52, "to": "breakfast", "label": "Breakfast area", "dir": "right"}, {"x": 12, "y": 55, "to": "guest", "label": "Guest bedroom", "dir": "left"}], "say": "The game room, sixteen feet eight by thirteen feet eight, sits behind French doors off the main living space.", "empty": "../img/BEDROOM_3_small.jpg", "room": "game", "clip": null, "src": "../img/15_staged__gaming_room.jpg", "thumb": "../img/t_15_staged__gaming_room.jpg"}, {"id": "primary", "title": "Primary Bedroom", "sub": "12&prime;9&Prime; &times; 19&prime;5&Prime; &middot; vaulted, rear windows", "px": 0, "py": 0, "hs": [{"x": 12, "y": 54, "to": "fkf", "label": "Back to the living room", "dir": "left"}, {"x": 88, "y": 56, "to": "pbath", "label": "Primary bath", "dir": "right"}], "say": "The primary suite offers a relaxing retreat, with soaring ceilings and windows over the private back yard.", "empty": "../img/BEDROOM_4_small.jpg", "room": "primary", "clip": null, "src": "../img/16_staged__primary_bedroom.jpg", "thumb": "../img/t_16_staged__primary_bedroom.jpg"}, {"id": "pbath", "title": "Primary Bath", "sub": "12&prime;9&Prime; &times; 13&prime;8&Prime; &middot; dual vanities, soaking tub", "px": 0, "py": 0, "hs": [{"x": 38, "y": 52, "to": "closet", "label": "Walk-in closet", "dir": "fwd"}, {"x": 12, "y": 55, "to": "primary", "label": "Back to the bedroom", "dir": "left"}, {"x": 50, "y": 84, "to": "pbath2", "label": "Another angle", "dir": "back"}], "say": "The spa like primary bath features dual vanities, a soaking tub, a separate glass shower, and a walk in closet.", "empty": "../img/BATHROOM_1_small.jpg", "room": "pbath", "clip": null, "src": "../img/17_staged__primary_bathroom1.jpg", "thumb": "../img/t_17_staged__primary_bathroom1.jpg"}, {"id": "pbath2", "title": "Primary Bath &middot; Shower &amp; Tub", "sub": "Separate shower, garden tub, door to the bedroom", "px": 0, "py": 0, "hs": [{"x": 48, "y": 50, "to": "primary", "label": "Primary bedroom", "dir": "fwd"}, {"x": 50, "y": 84, "to": "pbath", "label": "Another angle", "dir": "back"}], "say": "A soaking tub and separate glass shower complete the spa like primary bath.", "empty": "../img/BATHROOM_1_small.jpg", "room": "pbath", "clip": null, "src": "../img/17a_staged__primary_bathroom.jpg", "thumb": "../img/t_17a_staged__primary_bathroom.jpg"}, {"id": "closet", "title": "Primary Closet", "sub": "12&prime;9&Prime; &times; 6&prime;8&Prime; &middot; walk-in, built-in shelving", "px": 0, "py": 0, "hs": [{"x": 88, "y": 55, "to": "pbath", "label": "Back to the bath", "dir": "right"}], "say": "The primary walk in closet, with built in shelving and double hanging on both sides.", "empty": "../img/CLOSET_1_small.jpg", "room": "closet", "clip": null, "src": "../img/18_staged_closet.jpg", "thumb": "../img/t_18_staged_closet.jpg"}, {"id": "bed_f", "title": "Bedroom", "sub": "12&prime;9&Prime; &times; 10&prime;6&Prime; &middot; walk-in closet", "px": 0, "py": 0, "hs": [{"x": 88, "y": 56, "to": "bath_h", "label": "Hall bathroom", "dir": "right"}, {"x": 12, "y": 52, "to": "foyer", "label": "Back to the entry", "dir": "left"}], "say": "Additional bedrooms are generously sized, each with a walk in closet.", "empty": "../img/BEDROOM_5_small.jpg", "room": "bed_f", "clip": null, "src": "../img/21_stagedsecondary_bedroom.jpg", "thumb": "../img/t_21_stagedsecondary_bedroom.jpg"}, {"id": "bath_h", "title": "Hall Bathroom", "sub": "Tub &amp; shower, granite vanity", "px": 0, "py": 0, "hs": [{"x": 88, "y": 55, "to": "bed_m", "label": "Next bedroom", "dir": "right"}, {"x": 12, "y": 55, "to": "bed_f", "label": "Back", "dir": "left"}], "say": "The hall bathroom serves the secondary bedrooms, with a granite vanity and a tub and shower.", "empty": "../img/BATHROOM_3_small.jpg", "room": "bath_h", "clip": null, "src": "../img/23_staged_bathroom_3.jpg", "thumb": "../img/t_23_staged_bathroom_3.jpg"}, {"id": "bed_m", "title": "Bedroom", "sub": "12&prime;9&Prime; &times; 10&prime;5&Prime; &middot; walk-in closet", "px": 0, "py": 0, "hs": [{"x": 12, "y": 52, "to": "bath_h", "label": "Hall bathroom", "dir": "left"}, {"x": 88, "y": 56, "to": "primary", "label": "Primary suite", "dir": "right"}], "say": "Additional bedrooms are generously sized, each with a walk in closet.", "empty": "../img/BEDROOM_6_small.jpg", "room": "bed_m", "clip": null, "src": "../img/22_staged__another_bedroom.jpg", "thumb": "../img/t_22_staged__another_bedroom.jpg"}, {"id": "guest", "title": "Guest Bedroom", "sub": "11&prime;1&Prime; &times; 15&prime;2&Prime; &middot; ensuite bath", "px": 0, "py": 0, "hs": [{"x": 12, "y": 52, "to": "gaming", "label": "Game room", "dir": "left"}, {"x": 46, "y": 50, "to": "bath2", "label": "Ensuite bath", "dir": "fwd"}], "say": "The guest suite offers a private bedroom with its own full bath.", "empty": null, "room": "guest", "clip": null, "src": "../img/19_staged_bedroom.jpg", "thumb": "../img/t_19_staged_bedroom.jpg"}, {"id": "bath2", "title": "Guest Bathroom", "sub": "5&prime;3&Prime; &times; 8&prime;1&Prime; &middot; tub &amp; shower", "px": 0, "py": 0, "hs": [{"x": 88, "y": 55, "to": "guest", "label": "Back to the bedroom", "dir": "right"}], "say": "The guest bath, with granite vanity and a tub and shower, is private to the guest suite.", "empty": "../img/BATHROOM_2_small.jpg", "room": "bath2", "clip": null, "src": "../img/20_staged_bathroom2.jpg", "thumb": "../img/t_20_staged_bathroom2.jpg"}];
+const HOME = {"w": 47.6, "d": 77.6, "slab": [{"x": 0, "y": 0.0, "w": 12.75, "d": 77.6}, {"x": 12.75, "y": 7.6, "w": 16.15, "d": 70.0}, {"x": 28.9, "y": 59.6, "w": 18.7, "d": 18.0}, {"x": 25.7, "y": 7.6, "w": 21.9, "d": 52.0}, {"x": 31.15, "y": 0.0, "w": 16.45, "d": 28.6}], "rooms": [{"id": "office", "name": "Office / Study", "x": 0.0, "y": 67.1, "w": 12.75, "d": 10.5, "h": 10, "dim": "12'9\" \u00d7 10'6\"", "wall": null, "node": "office"}, {"id": "bed_f", "name": "Bedroom", "x": 0.0, "y": 56.6, "w": 12.75, "d": 10.5, "h": 9, "dim": "12'9\" \u00d7 10'6\"", "wall": null, "node": "bed_f"}, {"id": "bath_h", "name": "Bath & Closets", "x": 0.0, "y": 50.0, "w": 12.75, "d": 6.6, "h": 9, "dim": "", "wall": null, "node": "bath_h"}, {"id": "bed_m", "name": "Bedroom", "x": 0.0, "y": 39.6, "w": 12.75, "d": 10.4, "h": 9, "dim": "12'9\" \u00d7 10'5\"", "wall": null, "node": "bed_m"}, {"id": "closet", "name": "Primary Closet", "x": 0.0, "y": 32.9, "w": 12.75, "d": 6.7, "h": 9, "dim": "12'9\" \u00d7 6'8\"", "wall": null, "node": "closet"}, {"id": "pbath", "name": "Primary Bath", "x": 0.0, "y": 19.2, "w": 12.75, "d": 13.7, "h": 9, "dim": "12'9\" \u00d7 13'8\"", "wall": null, "node": "pbath"}, {"id": "primary", "name": "Primary Bedroom", "x": 0.0, "y": 0.0, "w": 12.75, "d": 19.2, "h": 11, "dim": "12'9\" \u00d7 19'5\"", "wall": null, "node": "primary"}, {"id": "entry", "name": "Entry", "x": 13.2, "y": 63.3, "w": 5.5, "d": 12.8, "h": 11, "dim": "6'0\" \u00d7 13'3\"", "wall": null, "node": "foyer"}, {"id": "dining", "name": "Dining Room", "x": 18.9, "y": 60.5, "w": 10.0, "d": 15.9, "h": 10, "dim": "9'7\" \u00d7 16'0\"", "wall": null, "node": "dining1"}, {"id": "garage", "name": "Garage", "x": 28.9, "y": 59.6, "w": 18.7, "d": 18.0, "h": 9, "dim": "2-car", "wall": null, "node": null}, {"id": "hall", "name": "Hallway", "x": 13.2, "y": 47.9, "w": 7.7, "d": 12.2, "h": 9, "dim": "7'11\" \u00d7 12'5\"", "wall": null, "node": null}, {"id": "pantry", "name": "Pantry", "x": 21.0, "y": 48.5, "w": 4.3, "d": 6.6, "h": 9, "dim": "4'2\" \u00d7 6'6\"", "wall": null, "node": null}, {"id": "mud", "name": "Mud Room", "x": 28.4, "y": 54.7, "w": 9.4, "d": 4.5, "h": 9, "dim": "", "wall": null, "node": "mud"}, {"id": "butler", "name": "Butler Hall", "x": 25.7, "y": 48.3, "w": 12.1, "d": 5.8, "h": 9, "dim": "9'1\" \u00d7 5'9\"", "wall": null, "node": "butler"}, {"id": "laundry", "name": "Laundry", "x": 37.8, "y": 40.3, "w": 9.8, "d": 6.3, "h": 9, "dim": "10'3\" \u00d7 6'0\"", "wall": null, "node": "utility"}, {"id": "kitchen", "name": "Kitchen & Dining", "x": 12.75, "y": 32.9, "w": 25.0, "d": 14.2, "h": 11, "dim": "open plan", "wall": [0, 0, 1, 1], "node": "kitchen"}, {"id": "break", "name": "Breakfast", "x": 37.8, "y": 28.6, "w": 9.8, "d": 9.6, "h": 10, "dim": "", "wall": [1, 1, 1, 0], "node": "breakfast"}, {"id": "great", "name": "Living Room", "x": 12.75, "y": 7.6, "w": 18.5, "d": 25.3, "h": 13, "dim": "24'6\" \u00d7 21'3\"", "wall": [1, 1, 0, 1], "node": "family1"}, {"id": "game", "name": "Game / Media", "x": 31.3, "y": 14.9, "w": 16.3, "d": 13.7, "h": 9, "dim": "16'8\" \u00d7 13'8\"", "wall": null, "node": "gaming"}, {"id": "bath2", "name": "Bathroom", "x": 31.3, "y": 3.2, "w": 5.2, "d": 8.2, "h": 9, "dim": "5'3\" \u00d7 8'1\"", "wall": null, "node": "bath2"}, {"id": "closet2", "name": "Closet", "x": 31.3, "y": -0.0, "w": 5.2, "d": 3.2, "h": 9, "dim": "", "wall": null, "node": null}, {"id": "guest", "name": "Guest Bedroom", "x": 36.5, "y": 0.0, "w": 11.1, "d": 14.5, "h": 9, "dim": "11'1\" \u00d7 15'2\"", "wall": null, "node": "guest"}, {"id": "patio", "name": "Covered Patio", "x": 12.75, "y": 0.0, "w": 18.4, "d": 7.6, "h": 0, "dim": "", "wall": null, "node": null}]};
+const PLAN2D = {"src": "../plan2d.jpg", "parking": {"x": 64.0, "y": 78.5, "w": 30.0, "h": 20.5, "label": "GARAGE \u00b7 3 CARS"}, "rooms": [{"node": "primary", "x": 27.9, "y": 15.6, "name": "Primary Bedroom"}, {"node": "pbath", "x": 24.0, "y": 32.6, "name": "Primary Bath"}, {"node": "closet", "x": 24.0, "y": 47.3, "name": "Primary Closet"}, {"node": "bed_m", "x": 27.9, "y": 56.4, "name": "Bedroom"}, {"node": "bath_h", "x": 26.8, "y": 67.7, "name": "Hall Bathroom"}, {"node": "bed_f", "x": 27.9, "y": 80.3, "name": "Bedroom"}, {"node": "office", "x": 27.9, "y": 93.3, "name": "Office / Study"}, {"node": "foyer", "x": 42.7, "y": 86.4, "name": "Entry"}, {"node": "dining1", "x": 56.8, "y": 88.5, "name": "Dining Room"}, {"node": "family1", "x": 51.9, "y": 26.0, "name": "Living Room"}, {"node": "kitchen", "x": 60.6, "y": 43.0, "name": "Kitchen"}, {"node": "breakfast", "x": 79.0, "y": 45.0, "name": "Breakfast"}, {"node": "utility", "x": 85.5, "y": 52.9, "name": "Laundry"}, {"node": "gaming", "x": 78.5, "y": 30.4, "name": "Game / Media"}, {"node": "guest", "x": 85.5, "y": 14.8, "name": "Guest Bedroom"}, {"node": "bath2", "x": 71.2, "y": 10.4, "name": "Guest Bathroom"}, {"node": "butler", "x": 68.4, "y": 71.2, "name": "Butler Hall"}, {"node": "mud", "x": 68.4, "y": 76.2, "name": "Mud Room"}]};
+const MUSIC  = [{"type": "audio/mpeg", "src": "../music.mp3"}, {"type": "audio/ogg; codecs=opus", "src": "../music.ogg"}];
+
+const ICON = {
+  fwd:'<svg viewBox="0 0 24 24"><path d="M12 20V5M6 11l6-6 6 6"/></svg>',
+  back:'<svg viewBox="0 0 24 24"><path d="M12 4v15M6 13l6 6 6-6"/></svg>',
+  left:'<svg viewBox="0 0 24 24"><path d="M20 12H5M11 6l-6 6 6 6"/></svg>',
+  right:'<svg viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></svg>',
+  up:'<svg viewBox="0 0 24 24"><path d="M12 20V5M6 11l6-6 6 6"/></svg>'
+};
+const idx = Object.fromEntries(D.map((n,i)=>[n.id,i]));
+let cur = -1, lyTop = 'A', timer = null, curNode = null;
+
+const A=document.getElementById('lyA'), B=document.getElementById('lyB');
+const hots=document.getElementById('hots'), strip=document.getElementById('strip');
+
+/* ============================================================
+   Dollhouse — tiny painter's-algorithm 3D renderer, no deps
+   ============================================================ */
+class Dollhouse{
+  constructor(canvas, opts={}){
+    this.c = canvas; this.ctx = canvas.getContext('2d');
+    this.az = opts.az ?? -0.62; this.el = opts.el ?? 0.72;
+    this.zoom = opts.zoom ?? 1; this.labels = opts.labels ?? false;
+    this.onPick = opts.onPick || (()=>{});
+    this.onHover = opts.onHover || (()=>{});
+    this.active = null; this.hover = null; this.spin = false;
+    this.cx = HOME.w/2; this.cy = HOME.d/2;
+    this._bind(); this._loop = this._loop.bind(this); requestAnimationFrame(this._loop);
+  }
+  resize(){
+    const r = this.c.getBoundingClientRect(), dpr = Math.min(devicePixelRatio||1, 2);
+    if(!r.width) return false;
+    this.c.width = r.width*dpr; this.c.height = r.height*dpr;
+    this.ctx.setTransform(dpr,0,0,dpr,0,0);
+    this.W = r.width; this.H = r.height; return true;
+  }
+  _bind(){
+    let dx=0, dy=0, down=false, moved=0, lx=0, ly=0;
+    const pos = e => { const r=this.c.getBoundingClientRect(); const t=e.touches?e.touches[0]:e; return [t.clientX-r.left, t.clientY-r.top]; };
+    this.c.addEventListener('pointerdown', e=>{ down=true; moved=0; [lx,ly]=pos(e); this.c.setPointerCapture(e.pointerId); });
+    this.c.addEventListener('pointermove', e=>{
+      const [x,y]=pos(e);
+      if(down){ dx=x-lx; dy=y-ly; lx=x; ly=y; moved+=Math.abs(dx)+Math.abs(dy);
+        this.az -= dx*0.009; this.el = Math.max(0.18, Math.min(1.50, this.el + dy*0.007)); this.spin=false;
+      } else { const h=this.pick(x,y); if(h!==this.hover){ this.hover=h; this.onHover(h,x,y); } }
+    });
+    this.c.addEventListener('pointerup', e=>{
+      down=false;
+      if(moved<5){ const [x,y]=pos(e); const h=this.pick(x,y); if(h) this.onPick(h); }
+    });
+    this.c.addEventListener('pointerleave', ()=>{ down=false; if(this.hover){ this.hover=null; this.onHover(null); } });
+    this.c.addEventListener('wheel', e=>{ e.preventDefault(); this.zoom = Math.max(.55, Math.min(2.6, this.zoom * (e.deltaY>0?0.92:1.09))); }, {passive:false});
+  }
+  proj(x,y,z){
+    const ca=Math.cos(this.az), sa=Math.sin(this.az), ce=Math.cos(this.el), se=Math.sin(this.el);
+    const X=(x-this.cx)*ca - (y-this.cy)*sa;
+    const Y=(x-this.cx)*sa + (y-this.cy)*ca;
+    const s = this.s;
+    return [ this.W/2 + X*s, this.H/2 + (Y*se - z*ce)*s, Y*ce + z*se ];
+  }
+  faces(){
+    const out=[];
+    for(const r of HOME.rooms){
+      const {x,y,w,d} = r, h = r.h||9;
+      const p=(a,b,c)=>this.proj(a,b,c);
+      const f0=[p(x,y,0),p(x+w,y,0),p(x+w,y+d,0),p(x,y+d,0)];
+      out.push({r, kind:'floor', pts:f0, z:Math.max(...f0.map(v=>v[2]))});
+      if(!h) continue;                       // h = 0 -> floor only (open patio)
+      const V=[[x,y],[x+w,y],[x+w,y+d],[x,y+d]];
+      for(let i=0;i<4;i++){
+        if(r.wall && !r.wall[i]) continue;     // open-plan side, no wall
+        const a=V[i], b=V[(i+1)%4];
+        const q=[p(a[0],a[1],0),p(b[0],b[1],0),p(b[0],b[1],h),p(a[0],a[1],h)];
+        out.push({r, kind:'wall', side:i, pts:q, z:(q[0][2]+q[1][2])/2});
+      }
+    }
+    return out.sort((a,b)=>a.z-b.z);
+  }
+  pick(px,py){
+    const hit=[];
+    for(const r of HOME.rooms){
+      const {x,y,w,d}=r;
+      const q=[this.proj(x,y,0),this.proj(x+w,y,0),this.proj(x+w,y+d,0),this.proj(x,y+d,0)];
+      if(this._in(px,py,q)) hit.push({r, z:Math.max(...q.map(v=>v[2]))});
+    }
+    if(!hit.length) return null;
+    hit.sort((a,b)=>b.z-a.z);
+    return hit[0].r;
+  }
+  _in(px,py,q){
+    let c=false;
+    for(let i=0,j=3;i<4;j=i++){
+      const [xi,yi]=q[i], [xj,yj]=q[j];
+      if(((yi>py)!==(yj>py)) && (px < (xj-xi)*(py-yi)/(yj-yi)+xi)) c=!c;
+    }
+    return c;
+  }
+  poly(pts,fill,stroke,lw){
+    const c=this.ctx; c.beginPath(); c.moveTo(pts[0][0],pts[0][1]);
+    for(let i=1;i<pts.length;i++) c.lineTo(pts[i][0],pts[i][1]);
+    c.closePath();
+    if(fill){ c.fillStyle=fill; c.fill(); }
+    if(stroke){ c.strokeStyle=stroke; c.lineWidth=lw||1; c.stroke(); }
+  }
+  ft(v){ const f=Math.floor(v), i=Math.round((v-f)*12); return (i===12? (f+1)+"'0\"" : f+"'"+i+'"'); }
+  dimLine(a,b,off,txt){
+    const c=this.ctx, p=this.proj(a[0]+off[0],a[1]+off[1],0), q=this.proj(b[0]+off[0],b[1]+off[1],0);
+    const pa=this.proj(a[0],a[1],0), qb=this.proj(b[0],b[1],0);
+    c.strokeStyle='rgba(230,200,147,.55)'; c.lineWidth=1;
+    c.beginPath(); c.moveTo(p[0],p[1]); c.lineTo(q[0],q[1]); c.stroke();
+    c.setLineDash([3,3]); c.strokeStyle='rgba(230,200,147,.28)';
+    c.beginPath(); c.moveTo(pa[0],pa[1]); c.lineTo(p[0],p[1]); c.moveTo(qb[0],qb[1]); c.lineTo(q[0],q[1]); c.stroke();
+    c.setLineDash([]);
+    c.fillStyle='rgba(230,200,147,.95)'; c.font='600 12px ui-sans-serif,system-ui,sans-serif';
+    c.textAlign='center'; c.textBaseline='middle';
+    c.lineWidth=3.5; c.strokeStyle='rgba(0,0,0,.6)';
+    c.strokeText(txt,(p[0]+q[0])/2,(p[1]+q[1])/2-9); c.fillText(txt,(p[0]+q[0])/2,(p[1]+q[1])/2-9);
+  }
+  dims(){
+    const W=HOME.w, D=HOME.d;
+    this.dimLine([0,D],[W,D],[0,5], this.ft(W)+' wide');
+    this.dimLine([0,0],[0,D],[-5,0], this.ft(D)+' deep');
+  }
+  _loop(){
+    requestAnimationFrame(this._loop);
+    if(!this.resize()) return;
+    if(this.spin) this.az += 0.0035;
+    const pad = this.labels ? 90 : 26;
+    this.s = this.zoom * Math.min((this.W-pad)/ (HOME.w*1.25), (this.H-pad)/(HOME.d*1.05));
+    const c=this.ctx; c.clearRect(0,0,this.W,this.H);
+
+    // house slab — union of rectangles approximating the real footprint
+    for(const S of HOME.slab){
+      const g=[this.proj(S.x,S.y,0),this.proj(S.x+S.w,S.y,0),this.proj(S.x+S.w,S.y+S.d,0),this.proj(S.x,S.y+S.d,0)];
+      this.poly(g,'rgba(255,255,255,.075)',null,0);
+    }
+
+    for(const f of this.faces()){
+      const r=f.r, lit=!!r.node, on=this.active===r.id, hov=this.hover===r;
+      if(f.kind==='floor'){
+        let fill = lit ? 'rgba(230,200,147,.30)' : 'rgba(150,155,165,.15)';
+        if(on) fill='rgba(230,200,147,.72)'; else if(hov&&lit) fill='rgba(230,200,147,.50)';
+        else if(hov) fill='rgba(170,175,185,.30)';
+        this.poly(f.pts, fill, on?'rgba(255,240,210,.95)':'rgba(255,255,255,.22)', on?1.6:1);
+      } else {
+        const shade = [0.30,0.20,0.13,0.24][f.side];
+        let fill = `rgba(${lit?'236,224,203':'150,158,170'},${shade})`;
+        if(on) fill = `rgba(230,200,147,${shade+0.20})`;
+        this.poly(f.pts, fill, 'rgba(255,255,255,.13)', 1);
+      }
+    }
+    // room labels + dimensions, drawn on the floor of every room
+    const fs = this.labels ? 12.5 : 9;
+    c.textAlign='center'; c.textBaseline='middle';
+    for(const r of HOME.rooms){
+      const p0=this.proj(r.x,r.y,0), p1=this.proj(r.x+r.w,r.y,0), p2=this.proj(r.x,r.y+r.d,0);
+      const wpx=Math.hypot(p1[0]-p0[0],p1[1]-p0[1]), dpx=Math.hypot(p2[0]-p0[0],p2[1]-p0[1]);
+      const fit=Math.max(wpx,dpx)*1.05;
+      const p=this.proj(r.x+r.w/2, r.y+r.d/2, 0);
+      c.font='600 '+fs.toFixed(1)+'px ui-sans-serif,system-ui,sans-serif';
+      if(c.measureText(r.name).width > fit) continue;          // room too small for text
+      const two = r.dim && this.labels && c.measureText(r.dim).width <= fit;
+      c.lineWidth=3; c.strokeStyle='rgba(0,0,0,.55)';
+      c.fillStyle = r.node ? 'rgba(255,247,233,.96)' : 'rgba(255,255,255,.45)';
+      c.strokeText(r.name, p[0], p[1]-(two?fs*0.55:0));
+      c.fillText(r.name, p[0], p[1]-(two?fs*0.55:0));
+      if(two){
+        c.font=(fs*0.92).toFixed(1)+'px ui-sans-serif,system-ui,sans-serif';
+        c.strokeText(r.dim, p[0], p[1]+fs*0.62);
+        c.fillStyle = r.node ? 'rgba(230,200,147,.92)' : 'rgba(230,200,147,.45)';
+        c.fillText(r.dim, p[0], p[1]+fs*0.62);
+      }
+    }
+    if(this.labels) this.dims();
+  }
+}
+
+/* ============================================================
+   2D floor plan — the surveyed drawing with clickable rooms
+   ============================================================ */
+function buildPlan2D(host, big){
+  const P=PLAN2D.parking;
+  const svg='<svg class="park" viewBox="0 0 100 100" preserveAspectRatio="none">'
+    + '<rect x="'+P.x+'" y="'+P.y+'" width="'+P.w+'" height="'+P.h+'" fill="rgba(120,126,136,.10)" stroke="#5b5f66" stroke-width="0.55"/>'
+    + '</svg>';
+  host.innerHTML='';
+  const box=document.createElement('div');
+  box.className='p2d';
+  box.innerHTML='<img src="'+PLAN2D.src+'" alt="Floor plan">'+svg;
+  host.appendChild(box);
+  // parking label, positioned in normal flow so the type never distorts
+  const lab=document.createElement('div');
+  lab.style.cssText='position:absolute;z-index:3;pointer-events:none;text-align:center;white-space:nowrap;'
+    +'left:'+(P.x+P.w/2)+'%;top:'+(P.y+P.h*0.055)+'%;transform:translateX(-50%);'
+    +'font:700 '+(big?12:8)+'px ui-sans-serif,system-ui,sans-serif;letter-spacing:.18em;color:#4a4d53';
+  lab.textContent=P.label||'PARKING';
+  box.appendChild(lab);
+  PLAN2D.rooms.forEach(r=>{
+    const el=document.createElement('div');
+    el.className='pin'; el.dataset.node=r.node;
+    el.style.left=r.x+'%'; el.style.top=r.y+'%';
+    el.innerHTML='<i></i><b>'+r.name+'</b>';
+    el.onclick=e=>{ e.stopPropagation();
+      if(LEAD.show && (LEAD.gate||{}).mode==='plan' && !unlocked){ openLead(true); return; }
+      go(idx[r.node]); };
+    box.appendChild(el);
+  });
+  return box;
+}
+function markPlan2D(node){
+  document.querySelectorAll('.p2d .pin').forEach(p=>p.classList.toggle('act', p.dataset.node===node));
+}
+
+/* ---------- build the tour ---------- */
+D.forEach((n,i)=>{
+  const d=document.createElement('div');
+  d.className='th'; d.onclick=()=>go(i);
+  d.innerHTML='<img src="'+n.thumb+'" alt="" loading="lazy"><span>'+n.title+'</span>';
+  strip.appendChild(d);
+});
+
+function go(i){
+  if(i===cur||i==null) return;
+  i=(i+D.length)%D.length;
+  const n=D[i];
+  const inc = lyTop==='A' ? B : A, out = lyTop==='A' ? A : B;
+  inc.src=n.src; inc.classList.remove('kb'); void inc.offsetWidth; inc.classList.add('kb','show');
+  out.classList.remove('show');
+  lyTop = lyTop==='A' ? 'B' : 'A';
+  cur=i;
+
+  document.getElementById('capIdx').textContent = String(i+1).padStart(2,'0')+' / '+String(D.length).padStart(2,'0');
+  document.getElementById('capTitle').innerHTML = n.title;
+  document.getElementById('capSub').innerHTML = n.sub;
+
+  stopClip();
+  if(n.clip){ clip.src=clipURL(n.clip, n.id); clip.load(); mBtn.classList.add('show'); } else { clip.removeAttribute('src'); mBtn.classList.remove('show'); }
+  resetView(false);
+  hots.innerHTML='';
+  (n.hs||[]).forEach((h,k)=>{
+    const e=document.createElement('div');
+    // left-edge hotspots would sit under the floor-plan card, so drop them below it
+    const hx=h.x, hy=(hx<22 ? Math.max(h.y,66) : h.y);
+    e.className='hot'; e.style.left=hx+'%'; e.style.top=hy+'%'; e.style.animationDelay=(120+k*90)+'ms';
+    e.innerHTML='<div class="disc">'+(ICON[h.dir]||ICON.fwd)+'</div><div class="lab">'+h.label+'</div>';
+    e.onclick=ev=>{ev.stopPropagation(); if(h.to.charAt(0)==='#') openBig(); else go(idx[h.to]);};
+    hots.appendChild(e);
+  });
+
+  [...strip.children].forEach((t,j)=>{
+    t.classList.toggle('act', j===i);
+    if(j===i) t.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+  });
+  small.active = n.room || null; if(window.bigDH) bigDH.active = n.room || null;
+  curNode = n.id; markPlan2D(n.id);
+  if(n.room) seen.add(n.room);
+  gateCheck();
+  document.getElementById('pfRoom').textContent = n.room ? roomLabel(n.room) : 'Exterior';
+  if(typeof speakNode==='function') speakNode(i);
+  emptyOn=false; updEmptyBtn(n);
+}
+
+const pickRoom = r => { if(!r.node) return;
+  if(LEAD.show && (LEAD.gate||{}).mode==='plan' && !unlocked){ openLead(true); return; }
+  go(idx[r.node]); };
+const pfRoom = document.getElementById('pfRoom');
+const roomLabel = id => { const r=HOME.rooms.find(r=>r.id===id); return r ? r.name + (r.dim?' · '+r.dim:'') : 'Exterior'; };
+const small = new Dollhouse(document.getElementById('cvSmall'), {onPick:pickRoom, zoom:1.28,
+  onHover:r=>{ pfRoom.textContent = r ? roomLabel(r.id) : (D[cur] && D[cur].room ? roomLabel(D[cur].room) : 'Exterior'); }});
+document.getElementById('cvSmall').style.height = '250px';
+
+const bigEl=document.getElementById('big'), tip=document.getElementById('bigTip');
+let bigDH=null;
+function openBig(){
+  bigEl.classList.add('on');
+  function initBigDH(){
+    bigDH = window.bigDH = new Dollhouse(document.getElementById('cvBig'), {labels:true, zoom:1.14, onPick:r=>{ if(r.node){ pickRoom(r); closeBig(); } },
+      onHover:(r,x,y)=>{
+        if(!r){ tip.style.opacity=0; return; }
+        tip.innerHTML='<b>'+r.name+'</b>'+(r.dim?'<s>'+r.dim+'</s>':'')+(r.node?'':'<s style="color:#8b8f96">no photo</s>');
+        tip.style.left=(x+16)+'px'; tip.style.top=(y+14)+'px'; tip.style.opacity=1;
+      }});
+    bigDH.active = small.active;
+  }
+  window.initBigDH = initBigDH;
+  if(!bigEl.dataset.built){ buildPlan2D(document.getElementById('p2dBig'), true); bigEl.dataset.built='1'; markPlan2D(D[cur]&&D[cur].room?null:null); }
+  markPlan2D(curNode);
+  document.getElementById('bigTitle').textContent = PROPERTY.name;
+  document.getElementById('bigSub').textContent = PROPERTY.line;
+}
+const closeBig=()=>{ bigEl.classList.remove('on'); tip.style.opacity=0; };
+const p2d=buildPlan2D(document.getElementById('p2d'), false);
+const cv=document.getElementById('cvSmall'), ic2=document.getElementById('ic2D'), ic3=document.getElementById('ic3D');
+function panelMode(mode){
+  const three = mode==='3d';
+  cv.style.display = three ? 'block' : 'none';
+  p2d.style.display = three ? 'none' : 'block';
+  ic3.classList.toggle('on', three); ic2.classList.toggle('on', !three);
+  document.getElementById('icSpin').style.display = three ? '' : 'none';
+}
+ic2.onclick=()=>panelMode('2d'); ic3.onclick=()=>panelMode('3d');
+panelMode('2d');
+
+document.getElementById('icBig').onclick=openBig;
+document.getElementById('bigClose').onclick=closeBig;
+document.getElementById('icSpin').onclick=e=>{ small.spin=!small.spin; e.currentTarget.classList.toggle('on',small.spin); };
+const b2=document.getElementById('big2D'), b3=document.getElementById('big3D');
+function bigMode(three){
+  document.getElementById('cvBig').style.display = three?'block':'none';
+  document.getElementById('p2dBig').style.display = three?'none':'grid';
+  b3.classList.toggle('on',three); b2.classList.toggle('on',!three);
+}
+b2.onclick=()=>bigMode(false); b3.onclick=()=>{ bigMode(true); if(!bigDH) initBigDH(); };
+
+/* ============================================================
+   Photo viewport — drag to look around, wheel/pinch to zoom
+   ============================================================ */
+const view=document.getElementById('view'), stage=document.querySelector('main');
+const V={z:1,tx:0,ty:0};
+const zLvl=document.getElementById('zLvl');
+function bounds(){
+  const r=stage.getBoundingClientRect();
+  return [ r.width*(V.z-1)/(2*V.z) + 34/V.z, r.height*(V.z-1)/(2*V.z) + 26/V.z, r ];
+}
+function applyView(){
+  const [mx,my]=bounds();
+  V.tx=Math.max(-mx,Math.min(mx,V.tx)); V.ty=Math.max(-my,Math.min(my,V.ty));
+  const ry=-(V.tx/(mx||1))*5.5, rx=(V.ty/(my||1))*3.8;
+  view.style.transform='perspective(1500px) rotateX('+rx.toFixed(2)+'deg) rotateY('+ry.toFixed(2)+'deg) scale('+V.z+') translate('+V.tx.toFixed(1)+'px,'+V.ty.toFixed(1)+'px)';
+  zLvl.textContent=V.z.toFixed(1)+'\u00d7';
+}
+function zoomAt(nz, sx, sy){
+  const r=stage.getBoundingClientRect();
+  const px=(sx===undefined? 0 : sx-r.left-r.width/2), py=(sy===undefined? 0 : sy-r.top-r.height/2);
+  nz=Math.max(1,Math.min(4.5,nz));
+  V.tx += px*(1/nz - 1/V.z); V.ty += py*(1/nz - 1/V.z);
+  V.z=nz; applyView();
+}
+const resetView=(anim)=>{ if(anim===false) view.classList.add('live'); V.z=1; V.tx=0; V.ty=0; applyView();
+  if(anim===false) requestAnimationFrame(()=>view.classList.remove('live')); };
+
+let vDown=false, vMoved=0, vlx=0, vly=0, pts=new Map(), pinch=0, clipT0=0;
+stage.addEventListener('pointerdown',e=>{
+  if(e.target.closest('#zoomUI')||e.target.closest('.arw')||e.target.closest('.hot')||e.target.closest('#motion')) return;
+  e.preventDefault();
+  pts.set(e.pointerId,[e.clientX,e.clientY]);
+  vDown=true; vMoved=0; vlx=e.clientX; vly=e.clientY; sx0=e.clientX; clipT0=clip.currentTime;
+  view.classList.add('live'); stage.classList.add('grabbing');
+  stage.setPointerCapture(e.pointerId);
+});
+stage.addEventListener('pointermove',e=>{
+  if(!pts.has(e.pointerId)) return;
+  pts.set(e.pointerId,[e.clientX,e.clientY]);
+  if(pts.size===2){                                  // pinch
+    const [a,b]=[...pts.values()], d=Math.hypot(a[0]-b[0],a[1]-b[1]);
+    if(pinch) zoomAt(V.z*(d/pinch),(a[0]+b[0])/2,(a[1]+b[1])/2);
+    pinch=d; return;
+  }
+  if(!vDown) return;
+  const dx=e.clientX-vlx, dy=e.clientY-vly; vlx=e.clientX; vly=e.clientY;
+  vMoved+=Math.abs(dx)+Math.abs(dy);
+  if(clip.classList.contains('on') && clip.duration){          // walk through the room by dragging
+    clip.pause(); mTxt.textContent='Stop';
+    const w=stage.getBoundingClientRect().width;
+    const t=clipT0 - ((e.clientX-sx0)/(w*0.75))*clip.duration;
+    clip.currentTime=Math.max(0,Math.min(clip.duration-0.01,t));
+    scrubHint.classList.remove('show');
+    return;
+  }
+  if(e.pointerType!=='touch' || V.z>1.02){ V.tx+=dx/V.z; V.ty+=dy/V.z; applyView(); }
+});
+function endPointer(e){
+  pts.delete(e.pointerId); if(pts.size<2) pinch=0;
+  if(!vDown) return; vDown=false;
+  stage.classList.remove('grabbing');
+  requestAnimationFrame(()=>view.classList.remove('live'));
+  if(e.pointerType==='touch' && V.z<=1.02 && Math.abs(e.clientX-sx0)>70) return; // swipe handled below
+}
+stage.addEventListener('pointerup',endPointer);
+stage.addEventListener('pointercancel',endPointer);
+stage.addEventListener('wheel',e=>{ e.preventDefault();
+  if(clip.classList.contains('on') && clip.duration){
+    clip.pause(); mTxt.textContent='Stop';
+    clip.currentTime=Math.max(0,Math.min(clip.duration-0.01, clip.currentTime + (e.deltaY>0?-0.12:0.12)));
+    return;
+  }
+  zoomAt(V.z*(e.deltaY>0?0.9:1.11), e.clientX, e.clientY); },{passive:false});
+stage.addEventListener('dblclick',e=>{ zoomAt(V.z>1.4?1:2.4, e.clientX, e.clientY); });
+document.getElementById('zIn').onclick=()=>zoomAt(V.z*1.4);
+document.getElementById('zOut').onclick=()=>zoomAt(V.z/1.4);
+document.getElementById('zRst').onclick=()=>resetView();
+
+/* ---- cinematic motion clip (AI-generated camera move for this room) ---- */
+const clip=document.getElementById('clip'), mBtn=document.getElementById('motion'), mTxt=document.getElementById('motionTxt');
+/* Chromium refuses large data: URIs on <video>; hand it a Blob URL instead. */
+const _blobs={};
+function clipURL(list, key){
+  const probe=document.createElement('video');
+  const pick=list.find(s=>probe.canPlayType(s.type)) || list[0];
+  if(!pick.src.startsWith('data:')) return pick.src;
+  const ck=key+'|'+pick.type;
+  if(_blobs[ck]) return _blobs[ck];
+  const bin=atob(pick.src.slice(pick.src.indexOf(',')+1));
+  const buf=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) buf[i]=bin.charCodeAt(i);
+  return _blobs[ck]=URL.createObjectURL(new Blob([buf],{type:pick.type}));
+}
+const scrub=document.getElementById('scrub'), scrubFill=scrub.firstElementChild, scrubHint=document.getElementById('scrubHint');
+function stopClip(){ clip.pause(); clip.classList.remove('on'); mTxt.textContent='Play motion';
+  scrub.classList.remove('show'); scrubHint.classList.remove('show'); }
+clip.addEventListener('timeupdate',()=>{ if(clip.duration) scrubFill.style.width=(100*clip.currentTime/clip.duration)+'%'; });
+mBtn.onclick=()=>{
+  if(!clip.classList.contains('on')){
+    if(timer){ clearInterval(timer); timer=null; bPlay.classList.remove('on'); }
+    musicOff();
+    resetView(); clip.currentTime=0; clip.classList.add('on');
+    const pr=clip.play(); if(pr&&pr.catch) pr.catch(()=>{});
+    mTxt.textContent='Stop';
+    scrub.classList.add('show'); scrubHint.classList.add('show');
+    setTimeout(()=>scrubHint.classList.remove('show'),3200);
+  } else stopClip();
+};
+clip.addEventListener('ended', stopClip);
+
+const prev=()=>go(cur-1), nxt=()=>go(cur+1);
+document.getElementById('prev').onclick=prev;
+document.getElementById('next').onclick=nxt;
+
+const bPlan=document.getElementById('bPlan'), bStrip=document.getElementById('bStrip'),
+      bPlay=document.getElementById('bPlay'), bFull=document.getElementById('bFull'),
+      bHelp=document.getElementById('bHelp'), help=document.getElementById('help');
+
+bPlan.onclick=()=>{ const h=document.getElementById('plan').classList.toggle('hide'); bPlan.classList.toggle('on',!h); };
+bStrip.onclick=()=>{ const s=document.body.classList.toggle('strip'); bStrip.classList.toggle('on',s); };
+/* ---- ambient bed for the auto tour ---- */
+const audio=document.createElement('audio');
+audio.loop=true; audio.preload='none'; audio.volume=0; audio.id='bgm'; document.body.appendChild(audio);
+(MUSIC||[]).forEach(s=>{ const el=document.createElement('source'); el.src=s.src; el.type=s.type; audio.appendChild(el); });
+let muted=false, fadeT=null;
+const zMute=document.getElementById('zMute');
+function fadeTo(target, done){
+  clearInterval(fadeT);
+  fadeT=setInterval(()=>{
+    const d=target-audio.volume;
+    if(Math.abs(d)<0.02){ audio.volume=target; clearInterval(fadeT); if(done) done(); return; }
+    audio.volume=Math.max(0,Math.min(1,audio.volume+Math.sign(d)*0.02));
+  },60);
+}
+function musicOn(){ if(muted||!MUSIC.length) return; const p=audio.play(); if(p&&p.catch) p.catch(()=>{}); fadeTo(narrOn?0.10:0.34); }
+function musicOff(){ fadeTo(0, ()=>audio.pause()); }
+
+/* ---- spoken room narration (browser speech synthesis) ---- */
+const zMus=document.getElementById('zMus');
+zMus.onclick=()=>{
+  muted=!muted; zMus.style.opacity=muted?'.45':'';
+  zMus.title = muted ? 'Background music off' : 'Background music on';
+  if(muted) musicOff(); else if(timer) musicOn();
+};
+
+let narrOn=false, voice=null;
+const synth=window.speechSynthesis;
+function pickVoice(){
+  if(!synth) return;
+  const vs=synth.getVoices()||[];
+  voice = vs.find(v=>/en-US/i.test(v.lang)&&/natural|google|samantha|aria|jenny/i.test(v.name))
+       || vs.find(v=>/^en[-_]US/i.test(v.lang)) || vs.find(v=>/^en/i.test(v.lang)) || null;
+}
+if(synth){ pickVoice(); synth.onvoiceschanged=pickVoice; }
+function stopSpeak(){ if(synth) synth.cancel(); }
+function speakNode(i){
+  if(!narrOn || !synth) return;
+  const txt=(D[i]&&D[i].say)||'';
+  stopSpeak();
+  if(!txt) return;
+  const u=new SpeechSynthesisUtterance(txt);
+  u.lang='en-US'; u.rate=0.95; u.pitch=1.0; u.volume=1;
+  if(voice) u.voice=voice;
+  u.onend=()=>{ if(!muted && timer) fadeTo(0.34); };
+  if(!muted && audio.volume>0.12) fadeTo(0.10);   // duck the music while talking
+  synth.speak(u);
+}
+zMute.onclick=()=>{
+  if(!synth){ alert('This browser does not support spoken narration.'); return; }
+  narrOn=!narrOn;
+  zMute.classList.toggle('on', narrOn);
+  zMute.title = narrOn ? 'Narration on — click to stop' : 'Narrate this room';
+  if(narrOn){ if(!muted) fadeTo(0.10); speakNode(cur); }
+  else { stopSpeak(); if(!muted && timer) fadeTo(0.34); }
+  retime();
+};
+function tourGap(){ return narrOn ? 11000 : 4800; }
+function retime(){ if(timer){ clearInterval(timer); timer=setInterval(nxt, tourGap()); } }
+window.addEventListener('beforeunload', stopSpeak);
+
+/* ---- staged / empty photo toggle ---- */
+let emptyOn=false;
+const zEmpty=document.getElementById('zEmpty');
+function updEmptyBtn(n){
+  zEmpty.style.display = n.empty ? '' : 'none';
+  zEmpty.classList.toggle('on', emptyOn);
+  zEmpty.title = emptyOn ? 'Show it staged' : 'See the room empty';
+}
+zEmpty.onclick=()=>{
+  const n=D[cur];
+  if(!n.empty) return;
+  emptyOn=!emptyOn;
+  const inc = lyTop==='A' ? B : A, out = lyTop==='A' ? A : B;
+  inc.src = emptyOn ? n.empty : n.src;
+  inc.classList.remove('kb'); void inc.offsetWidth; inc.classList.add('show');
+  out.classList.remove('show');
+  lyTop = lyTop==='A' ? 'B' : 'A';
+  updEmptyBtn(n);
+};
+
+bPlay.onclick=()=>{
+  if(timer){ clearInterval(timer); timer=null; bPlay.classList.remove('on'); musicOff(); stopSpeak(); }
+  else { timer=setInterval(nxt,tourGap()); bPlay.classList.add('on'); nxt(); musicOn(); }
+};
+bFull.onclick=()=>{ document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.(); };
+bHelp.onclick=()=>help.classList.add('on');
+
+/* ---- lead capture ---- */
+const lead=document.getElementById('lead'), bLead=document.getElementById('bLead'), leadForm=document.getElementById('leadForm');
+if(LEAD.show){
+  bLead.style.display='';
+  document.getElementById('leadTitle').textContent=LEAD.title;
+  document.getElementById('leadBlurb').textContent=LEAD.blurb;
+  const alt=document.getElementById('leadAlt');
+  if(LEAD.phone)    alt.insertAdjacentHTML('beforeend','<a href="tel:'+LEAD.phone.replace(/[^+\d]/g,'')+'">Call '+LEAD.phone+'</a>');
+  if(LEAD.whatsapp) alt.insertAdjacentHTML('beforeend','<a target="_blank" rel="noopener" href="https://wa.me/'+LEAD.whatsapp+'">WhatsApp</a>');
+}
+let unlocked=false, seen=new Set(), gateShown=false;
+const G=LEAD.gate||{mode:'off'};
+function openLead(asGate){
+  const x=document.getElementById('leadX');
+  document.getElementById('leadTitle').textContent = asGate ? (G.title||LEAD.title) : LEAD.title;
+  document.getElementById('leadBlurb').textContent = asGate ? (G.blurb||LEAD.blurb) : LEAD.blurb;
+  x.style.display = (asGate && !G.skip) ? 'none' : '';
+  lead.dataset.gate = asGate ? '1' : '';
+  lead.classList.add('on');
+  if(timer){ clearInterval(timer); timer=null; bPlay.classList.remove('on'); musicOff(); }
+}
+function gateCheck(){
+  if(unlocked || !LEAD.show || G.mode!=='after' || gateShown) return false;
+  if(seen.size <= (G.free||6)) return false;
+  gateShown=true; openLead(true); return true;
+}
+bLead.onclick=()=>openLead(false);
+document.getElementById('leadX').onclick=()=>{ if(lead.dataset.gate && G.skip) unlocked=true; lead.classList.remove('on'); };
+lead.onclick=e=>{ if(e.target===lead && !(lead.dataset.gate && !G.skip)){ if(lead.dataset.gate&&G.skip) unlocked=true; lead.classList.remove('on'); } };
+
+leadForm.onsubmit=async e=>{
+  e.preventDefault();
+  const btn=document.getElementById('lfSend');
+  const v=id=>document.getElementById(id).value.trim();
+  const name=v('lfName'), phone=v('lfPhone'), email=v('lfEmail'), msg=v('lfMsg');
+  const old=leadForm.querySelector('.err'); if(old) old.remove();
+  const fail=m=>{ const d=document.createElement('div'); d.className='err'; d.textContent=m; leadForm.appendChild(d); };
+  if(!name || (!phone && !email)) return fail('Please add your name and either a phone or an email.');
+  if(!document.getElementById('lfOk').checked) return fail('Please tick the consent box so we may contact you.');
+
+  const payload={ name, phone, email, message: msg,
+                  property: PROPERTY.name, _subject: 'Tour enquiry — ' + PROPERTY.name };
+  const url = LEAD.endpoint || (LEAD.email ? 'https://formsubmit.co/ajax/'+LEAD.email : '');
+  btn.disabled=true; btn.textContent='Sending…';
+  const done=()=>{ unlocked=true; leadForm.style.display='none'; document.getElementById('leadDone').style.display='block';
+    setTimeout(()=>{ if(lead.dataset.gate) lead.classList.remove('on'); },1600); };
+  if(!url){                                   // no backend configured -> hand off to the mail client
+    const body=encodeURIComponent('Name: '+name+'\nPhone: '+phone+'\nEmail: '+email+'\n\n'+msg+'\n\nProperty: '+PROPERTY.name);
+    location.href='mailto:?subject='+encodeURIComponent(payload._subject)+'&body='+body;
+    setTimeout(done,400); return;
+  }
+  try{
+    const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify(payload)});
+    if(!r.ok) throw new Error(r.status);
+    done();
+  }catch(err){
+    btn.disabled=false; btn.textContent='Send';
+    fail('That did not go through. Please call '+(LEAD.phone||'us')+' instead.');
+  }
+};
+document.getElementById('bClose').onclick=()=>help.classList.remove('on');
+help.onclick=e=>{ if(e.target===help) help.classList.remove('on'); };
+
+addEventListener('keydown',e=>{
+  const k=e.key.toLowerCase();
+  if(k==='arrowright') nxt();
+  else if(k==='arrowleft') prev();
+  else if(k==='m') bPlan.click();
+  else if(k==='t') bStrip.click();
+  else if(k==='f') bFull.click();
+  else if(k==='escape'){ help.classList.remove('on'); lead.classList.remove('on'); closeBig(); }
+  else if(k==='+'||k==='='){ zoomAt(V.z*1.4); }
+  else if(k==='-'||k==='_'){ zoomAt(V.z/1.4); }
+  else if(k==='0'){ resetView(); }
+  else if(e.code==='Space'){ e.preventDefault(); bPlay.click(); }
+});
+
+let sx0=0;
+addEventListener('touchstart',e=>sx0=e.touches[0].clientX,{passive:true});
+addEventListener('touchend',e=>{
+  if(e.target.closest('#plan')||e.target.closest('#big')||e.target.closest('#strip')||e.target.closest('#zoomUI')) return;
+  if(V.z>1.02) return;                       // zoomed in: drag pans instead of switching rooms
+  const dx=e.changedTouches[0].clientX-sx0;
+  if(Math.abs(dx)>70){ dx<0?nxt():prev(); }
+},{passive:true});
+
+document.getElementById('propName').textContent = PROPERTY.name;
+document.getElementById('propAddr').textContent = PROPERTY.line;
+const agEl=document.getElementById('propAgent');
+if(AGENT.show){ agEl.textContent = 'Presented by ' + AGENT.name + (AGENT.firm?' · '+AGENT.firm:'') + (AGENT.phone?' · '+AGENT.phone:''); }
+else agEl.style.display='none';
+if(innerWidth<=760){ document.getElementById('plan').classList.add('hide'); bPlan.classList.remove('on'); }
+
+go(0);
+// help opens only from the Help button (no auto-open on load)
+</script>
+</body>
+</html>
