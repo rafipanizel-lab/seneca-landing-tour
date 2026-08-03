@@ -1052,12 +1052,25 @@ go(0);
 #mkt small{display:block;color:#7d838e;font-size:10.5px;line-height:1.5;margin-top:10px;font-style:italic}
 #mkt .x{float:right;cursor:pointer;color:#9aa0ab;font-size:22px;line-height:1;padding:2px 8px}
 #mkt .x:hover{color:#fff}
+#mkGate{position:relative}
+#mkGate.locked .mkblur{filter:blur(9px);pointer-events:none;user-select:none}
+#mkGate .mkcta{display:none}
+#mkGate.locked .mkcta{display:grid;position:absolute;inset:0;place-items:center;z-index:2}
+#mkGate .mkcta button{background:#e6c893;color:#1a1509;border:0;border-radius:12px;padding:12px 20px;font:700 14px ui-sans-serif,system-ui;cursor:pointer;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+#mkGate .mkcta small{display:block;color:#cfd3da;text-align:center;margin-top:8px;font-style:normal}
+#mkt table{width:100%;border-collapse:collapse;font-size:12.5px;margin:8px 0 4px}
+#mkt th,#mkt td{padding:7px 9px;text-align:left;border-bottom:1px solid rgba(255,255,255,.09);vertical-align:top}
+#mkt th{color:#9aa0ab;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase}
+#mkt td b{color:#e6c893}
+#mkt .zon{color:#7ddba3;font-weight:700}
+#mkt .noz{color:#9aa0ab}
+#mkt h3{margin:20px 0 2px;font-size:15px}
 </style>
 <div id="mkt"><div class="box">
 <span class="x" onclick="document.getElementById('mkt').classList.remove('on')">&times;</span>
 <h2>How this home is positioned</h2>
 <p class="sub">Recent comparable sales within 1 mile (from an independent licensed appraisal) vs. this home</p>
-<svg viewBox="0 0 560 345" style="width:100%;height:auto"><line x1="60" y1="280.0" x2="540" y2="280.0" stroke="rgba(255,255,255,.08)"/><text x="52" y="284.0" text-anchor="end" class="mkax">$440K</text><line x1="60" y1="220.0" x2="540" y2="220.0" stroke="rgba(255,255,255,.08)"/><text x="52" y="224.0" text-anchor="end" class="mkax">$470K</text><line x1="60" y1="160.0" x2="540" y2="160.0" stroke="rgba(255,255,255,.08)"/><text x="52" y="164.0" text-anchor="end" class="mkax">$500K</text><line x1="60" y1="100.0" x2="540" y2="100.0" stroke="rgba(255,255,255,.08)"/><text x="52" y="104.0" text-anchor="end" class="mkax">$530K</text><line x1="60" y1="40.0" x2="540" y2="40.0" stroke="rgba(255,255,255,.08)"/><text x="52" y="44.0" text-anchor="end" class="mkax">$560K</text><text x="102.7" y="330" text-anchor="middle" class="mkax">2,950</text><text x="230.9" y="330" text-anchor="middle" class="mkax">3,100</text><text x="359.1" y="330" text-anchor="middle" class="mkax">3,250</text><text x="487.3" y="330" text-anchor="middle" class="mkax">3,400</text><line x1="60" y1="310" x2="540" y2="310" stroke="rgba(255,255,255,.25)"/><line x1="60" y1="30" x2="60" y2="310" stroke="rgba(255,255,255,.25)"/><text x="300" y="344" text-anchor="middle" class="mkax">Living area (sqft)</text><circle cx="365.1" cy="182.0" r="7" fill="rgba(140,150,165,.85)"/><text x="365.1" y="170.0" text-anchor="middle" class="mklb">A · $489K</text><circle cx="493.3" cy="180.0" r="7" fill="rgba(140,150,165,.85)"/><text x="493.3" y="168.0" text-anchor="middle" class="mklb">B · $490K</text><circle cx="389.0" cy="80.0" r="7" fill="rgba(140,150,165,.85)"/><text x="389.0" y="68.0" text-anchor="middle" class="mklb">C · $540K</text><circle cx="103.6" cy="268.0" r="7" fill="rgba(140,150,165,.85)"/><text x="103.6" y="256.0" text-anchor="middle" class="mklb">D · $446K</text><circle cx="126.7" cy="280.2" r="7" fill="rgba(140,150,165,.85)"/><text x="126.7" y="268.2" text-anchor="middle" class="mklb">E · $439.9K</text><circle cx="341.1" cy="270.0" r="7" fill="rgba(140,150,165,.85)"/><text x="341.1" y="258.0" text-anchor="middle" class="mklb">F · $445K</text><path d="M413.8 107.0 l3.2 6.6 7.3 1-5.3 5.1 1.3 7.2-6.5-3.4-6.5 3.4 1.3-7.2-5.3-5.1 7.3-1z" fill="#e6c893" stroke="#1a1509" stroke-width="1"/><text x="413.8" y="102.0" text-anchor="middle" class="mklb" fill="#e6c893" font-weight="700">3209 Seneca · $521K · $157/sqft</text></svg>
+<div id="mkGate" class="locked"><div class="mkblur"><svg viewBox="0 0 560 345" style="width:100%;height:auto"><line x1="60" y1="280.0" x2="540" y2="280.0" stroke="rgba(255,255,255,.08)"/><text x="52" y="284.0" text-anchor="end" class="mkax">$440K</text><line x1="60" y1="220.0" x2="540" y2="220.0" stroke="rgba(255,255,255,.08)"/><text x="52" y="224.0" text-anchor="end" class="mkax">$470K</text><line x1="60" y1="160.0" x2="540" y2="160.0" stroke="rgba(255,255,255,.08)"/><text x="52" y="164.0" text-anchor="end" class="mkax">$500K</text><line x1="60" y1="100.0" x2="540" y2="100.0" stroke="rgba(255,255,255,.08)"/><text x="52" y="104.0" text-anchor="end" class="mkax">$530K</text><line x1="60" y1="40.0" x2="540" y2="40.0" stroke="rgba(255,255,255,.08)"/><text x="52" y="44.0" text-anchor="end" class="mkax">$560K</text><text x="102.7" y="330" text-anchor="middle" class="mkax">2,950</text><text x="230.9" y="330" text-anchor="middle" class="mkax">3,100</text><text x="359.1" y="330" text-anchor="middle" class="mkax">3,250</text><text x="487.3" y="330" text-anchor="middle" class="mkax">3,400</text><line x1="60" y1="310" x2="540" y2="310" stroke="rgba(255,255,255,.25)"/><line x1="60" y1="30" x2="60" y2="310" stroke="rgba(255,255,255,.25)"/><text x="300" y="344" text-anchor="middle" class="mkax">Living area (sqft)</text><circle cx="365.1" cy="182.0" r="7" fill="rgba(140,150,165,.85)"/><text x="365.1" y="170.0" text-anchor="middle" class="mklb">A · $489K</text><circle cx="493.3" cy="180.0" r="7" fill="rgba(140,150,165,.85)"/><text x="493.3" y="168.0" text-anchor="middle" class="mklb">B · $490K</text><circle cx="389.0" cy="80.0" r="7" fill="rgba(140,150,165,.85)"/><text x="389.0" y="68.0" text-anchor="middle" class="mklb">C · $540K</text><circle cx="103.6" cy="268.0" r="7" fill="rgba(140,150,165,.85)"/><text x="103.6" y="256.0" text-anchor="middle" class="mklb">D · $446K</text><circle cx="126.7" cy="280.2" r="7" fill="rgba(140,150,165,.85)"/><text x="126.7" y="268.2" text-anchor="middle" class="mklb">E · $439.9K</text><circle cx="341.1" cy="270.0" r="7" fill="rgba(140,150,165,.85)"/><text x="341.1" y="258.0" text-anchor="middle" class="mklb">F · $445K</text><path d="M413.8 107.0 l3.2 6.6 7.3 1-5.3 5.1 1.3 7.2-6.5-3.4-6.5 3.4 1.3-7.2-5.3-5.1 7.3-1z" fill="#e6c893" stroke="#1a1509" stroke-width="1"/><text x="413.8" y="102.0" text-anchor="middle" class="mklb" fill="#e6c893" font-weight="700">3209 Seneca · $521K · $157/sqft</text></svg>
 <ul>
 <li><b>3,314 sqft, verified by a licensed appraisal</b> — larger than 5 of the 6 comparable sales.</li>
 <li><b>3-car attached garage</b> — several comparables have only 2 (the appraiser valued the difference at +$6,000).</li>
@@ -1065,13 +1078,24 @@ go(0);
 <li>Vaulted family room with a wall of arched windows, fully open to the kitchen and breakfast area.</li>
 <li>Covered front porch <i>and</i> covered back patio.</li>
 <li><b>Vs. the lower-priced sales (D–F):</b> they are ~85–363 sqft smaller and lack the third garage bay and the guest-suite bath.</li>
-</ul>
+</ul></div><div class="mkcta"><div><button onclick="document.getElementById('mkt').classList.remove('on');openLead(true)">Get the full comparison by email</button><small>Leave your details and the full chart &amp; data package<br>will be sent to your inbox.</small></div></div></div>
+
+<h3>Zoned schools — all rated “A” on the listing</h3>
+<table>
+<tr><th>School</th><th>Zone</th><th>GreatSchools</th><th>Parents say</th><th>Highlights</th></tr>
+<tr><td><b>Glenn York Elementary</b> (PK–5)</td><td class="zon">✓ zoned</td><td><b>10/10</b></td><td>4.5★ (22 reviews)</td><td>95% attendance (state avg 81%), Gifted &amp; Talented, praised for academics and support</td></tr>
+<tr><td><b>Dr. R. E. McNair Junior High</b> (6–8)</td><td class="zon">✓ zoned</td><td><b>10/10</b></td><td>3.7★</td><td>Walking distance from the neighborhood; 1,033 students</td></tr>
+<tr><td><b>Shadow Creek High School</b> (9–12)</td><td class="zon">✓ zoned</td><td>7/10 · Niche <b>A</b></td><td>Mixed (2.3★, 7 reviews)</td><td>College Success Award, Sports A, College Prep A−, AP + Project Lead The Way, 91% attendance</td></tr>
+<tr><td>Glenda Dawson HS <i>(not zoned — east Pearland, Pearland ISD)</i></td><td class="noz">✗</td><td>9/10</td><td>4.7★ (9)</td><td>Strong college-prep record; homes zoned to it sit in a different, farther area</td></tr>
+</table>
+<small>The rare combination here: <b>both</b> the zoned elementary and junior high hold a perfect 10/10 on GreatSchools, and the high school carries an overall Niche grade of A — while remaining in Shadow Creek, minutes from the home. School ratings: GreatSchools.org &amp; Niche.com (checked Aug 2026); TEA 2025 district ratings: Alvin ISD and Pearland ISD both earned a B. Zoning per the HAR listing — verify with the district before purchase, zones can change.</small>
 <small>Sources: independent appraisal by a TX-licensed appraiser (June 2022); comparable addresses withheld and shown anonymized. Texas is a non-disclosure state — buyers should verify all information independently. This chart is informational and does not advertise any other broker&rsquo;s listing.</small>
 </div></div>
 <script>
 (function(){
   var b=document.getElementById('bMkt'), m=document.getElementById('mkt');
-  if(b) b.onclick=function(){ m.classList.add('on'); };
+  function syncGate(){ try{ if(typeof unlocked!=='undefined' && unlocked) document.getElementById('mkGate').classList.remove('locked'); }catch(e){} }
+  if(b) b.onclick=function(){ syncGate(); m.classList.add('on'); };
   m.addEventListener('click',function(e){ if(e.target===m) m.classList.remove('on'); });
   window.addEventListener('keydown',function(e){ if(e.key==='Escape') m.classList.remove('on'); });
 })();
