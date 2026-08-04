@@ -206,6 +206,14 @@ body.endlock #hots,body.endlock #plan,body.endlock #strip,body.endlock #ui,body.
 body.intro #prev,body.intro #next{display:none!important}
 #plan.slow{transition:transform 2.8s cubic-bezier(.25,.7,.3,1)!important}
 #bHelp{display:none!important}
+#endAd{position:absolute;left:50%;bottom:120px;transform:translateX(-50%) translateY(14px);z-index:58;max-width:520px;width:calc(100% - 40px);
+  background:rgba(17,18,22,.96);border:1px solid rgba(230,200,147,.55);border-radius:16px;padding:18px 22px;text-align:center;
+  box-shadow:0 18px 60px rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:.5s}
+#endAd.on{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
+#endAd b{display:block;font-family:Georgia,serif;font-size:19px;color:#e6c893;margin-bottom:6px}
+#endAd p{font-size:13.5px;color:#c9cdd4;line-height:1.5;margin:0 0 12px}
+#endAd .go{display:inline-block;background:#e6c893;color:#1a1509;font-weight:800;border-radius:10px;padding:11px 22px;cursor:pointer;font-size:14.5px}
+body.touring #endAd{display:none}
 #lead{position:absolute;inset:0;z-index:62;display:none;place-items:center;background:rgba(6,7,8,.76);
   backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);padding:20px}
 #lead.on{display:grid}
@@ -367,7 +375,12 @@ body.intro #bPlay:not(.on){animation:bpRed 1.05s ease-in-out infinite;border-col
 
   <div id="strip"></div>
 
-  <div id="lead">
+  <div id="endAd">
+  <b>Loved the walk-through?</b>
+  <p>Get the complete details straight to your inbox &mdash; including a review of comparable homes for sale in the area, the school reports and the true monthly cost.</p>
+  <span class="go" onclick="openLead(true)">Send it to my email</span>
+</div>
+<div id="lead">
     <div class="card">
       <button class="x" id="leadX" aria-label="Close">&times;</button>
       <h2 id="leadTitle"></h2>
@@ -784,6 +797,10 @@ function go(i){
   if(n.room) seen.add(n.room);
   gateCheck();
   document.getElementById('pfRoom').textContent = n.room ? roomLabel(n.room) : 'Exterior';
+  clearTimeout(window.__adT);
+  const endAd=document.getElementById('endAd');
+  if(endAd){ endAd.classList.remove('on');
+    if(n.id==='yard' && !timer && !window.__transit) window.__adT=setTimeout(()=>{ if(D[cur].id==='yard' && !lead.classList.contains('on')) endAd.classList.add('on'); }, 2500); }
   if(typeof speakNode==='function'){ if(window.__transit) stopSpeak(); else speakNode(i); }
   emptyOn=false; updEmptyBtn(n);
   if(n.empty){ const pe=new Image(); pe.src=n.empty; }   // preload so the toggle is instant
@@ -1261,6 +1278,7 @@ function openLead(asGate){
   x.style.display = '';
   lead.dataset.gate = asGate ? '1' : '';
   lead.classList.add('on');
+  try{document.getElementById('endAd').classList.remove('on');}catch(e){}
   if(asGate) document.body.classList.add('endlock');
   if(timer){ clearInterval(timer); timer=null; bPlay.classList.remove('on'); musicOff(); }
 }
