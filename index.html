@@ -675,6 +675,7 @@ function buildPlan2D(host, big){
 }
 function updRoute(){
   if(typeof TOURSEQ==='undefined') return;
+  if(window.__walking) return;   // the walk animation owns the route line right now - no competing redraws
   if(!window.__seqPts){
     // the drawn route follows the ACTUAL walk (incl. the hallway pass-throughs), not straight lines through walls
     const pts=[];
@@ -1094,7 +1095,7 @@ function planWalk(nodes, done){
   const myWalk=(window.__wkC=(window.__wkC||0)+1);
   window.__walking=true;
   const wasHidden=plan.classList.contains('hide'); if(wasHidden) plan.classList.remove('hide');
-  if(!noFocus) plan.classList.add('focus');
+  if(!noFocus){ plan.classList.add('slow'); plan.classList.add('focus'); }
   const pin=nid=>{ const a=(typeof AVALIAS!=='undefined'&&AVALIAS[nid])||nid; return (PLAN2D.rooms||[]).find(r=>r.node===a); };
   const stops=[]; const c=pin(curNode); if(c) stops.push(c);
   nodes.forEach(n=>{ const r=pin(n); if(r && !(stops.length&&stops[stops.length-1].x===r.x&&stops[stops.length-1].y===r.y)) stops.push(r); });
@@ -1130,7 +1131,7 @@ function planWalk(nodes, done){
     else{
       avs.forEach(a2=>a2.classList.remove('fast'));
       window.__walking=false;
-      window.__pfT=setTimeout(()=>{ plan.classList.remove('focus'); if(wasHidden) setTimeout(()=>plan.classList.add('hide'),1300); },450);
+      window.__pfT=setTimeout(()=>{ plan.classList.remove('focus'); setTimeout(()=>plan.classList.remove('slow'),3000); if(wasHidden) setTimeout(()=>plan.classList.add('hide'),1300); },450);
       done();
     }
   }
@@ -1151,14 +1152,15 @@ function findRoute(a,b){
 }
 function manualWalk(target, zoom){
   if(timer || idx[target]==null){ go(idx[target]); return; }
+  if(window.__walking && window.__walkTarget===target) return;   // already walking there
   const route=findRoute(curNode, target);
   if(route && route.length>1){
+    window.__walkTarget=target;
     const plan=document.getElementById('plan');
-    if(zoom==='slow'){ plan.classList.add('slow'); clearTimeout(window.__slowT); window.__slowT=setTimeout(()=>plan.classList.remove('slow'), 8000); }
-    else window.__noFocus=true;
-    planWalk(route.slice(1), ()=>{});
-  }
-  go(idx[target]);
+    plan.classList.add('slow'); clearTimeout(window.__slowT); window.__slowT=setTimeout(()=>plan.classList.remove('slow'), 9000);
+    try{ const pre=new Image(); pre.src=D[idx[target]].src; }catch(e){}
+    planWalk(route.slice(1), ()=>{ window.__walkTarget=null; go(idx[target]); });   // watch him walk, then enter the room
+  } else go(idx[target]);
 }
 function tourAdvance(){
   if(!timer) return;
