@@ -1310,7 +1310,13 @@ leadForm.onsubmit=async e=>{
   if(!document.getElementById('lfOk').checked) return fail('Please tick the consent box so we may contact you.');
 
   const payload={ name, phone, email, message: msg,
-                  property: PROPERTY.name, _subject: 'Tour enquiry — ' + PROPERTY.name };
+                  property: PROPERTY.name, _subject: 'Tour enquiry — ' + PROPERTY.name,
+                  _autoresponse: 'Thank you for your interest in 3209 Seneca Landing Ln, Pearland!\n\n'
+                    +'Here is everything we promised, ready for you right now:\n\n'
+                    +'\u2022 Property brochure (PDF): https://rafipanizel-lab.github.io/seneca-landing-tour/followup/brochure.pdf\n'
+                    +'\u2022 The full picture — school reports (all three rated A), a review of comparable homes for sale in the area, healthcare, community and the true monthly cost: https://rafipanizel-lab.github.io/seneca-landing-tour/followup/\n'
+                    +'\u2022 Walk the home again: https://rafipanizel-lab.github.io/seneca-landing-tour/\n\n'
+                    +'We will be in touch shortly.\n\nLauren Klemann-Cohen · Keller Williams Preferred · 713-819-3069' };
   const url = LEAD.endpoint || (LEAD.email ? 'https://formsubmit.co/ajax/'+LEAD.email : '');
   btn.disabled=true; btn.textContent='Sending…';
   const done=()=>{ unlocked=true; leadForm.style.display='none'; document.getElementById('leadDone').style.display='block';
